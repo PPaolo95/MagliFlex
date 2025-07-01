@@ -476,7 +476,7 @@ function initializeSampleData() {
             { id: 1005, name: "Reparto Cucitura", machineTypes: [], finenesses: [], phaseIds: [4] },
             { id: 1006, name: "Reparto Controllo Qualità", machineTypes: [], finenesses: [], phaseIds: [5] },
             { id: 1007, name: "Reparto Rifinitura e Stiro", machineTypes: [], finenesses: [], phaseIds: [6] },
-            { id: 1008, name: "Reparto Etichettatura e Confezionamento", machineTypes: [], finenesses: [], phaseIds: [7] }
+            { id: 1008, name: "Reparto Etichettatura e Confezionamento", machineTypes: [], finenesses: [7] }
         ],
         rawMaterials: [
             { id: 201, name: "Filato di Cotone", unit: "kg", currentStock: 500 },
@@ -2370,6 +2370,8 @@ function calculateDelivery() {
                         if (savePlanningBtn) savePlanningBtn.style.display = 'none';
                         if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'none';
                         if (deliveryResultDiv) deliveryResultDiv.innerHTML = '<p style="text-align: center; color: var(--text-color);">Pianificazione annullata a causa di carenza materie prime.</p>';
+                        // Ensure currentCalculatedPlanningDetails is null if calculation is cancelled
+                        currentCalculatedPlanningDetails = null;
                     }
                 },
                 {
@@ -2542,15 +2544,24 @@ function proceedWithCalculation(article, quantity, startDate) {
 
 /**
  * Saves the calculated production planning to appData.
+ * This function handles both adding new lots and updating existing ones.
  */
 function savePlanning() {
+    console.log("savePlanning() chiamata.");
+    console.log("currentEditingId.planning:", currentEditingId.planning);
+    console.log("currentCalculatedPlanningDetails:", currentCalculatedPlanningDetails);
+    console.log("currentUser roles:", currentUser ? currentUser.roles : "Nessun utente loggato");
+
+
     if (!hasRole('planning')) {
         showNotification('Non hai i permessi per salvare la pianificazione.', 'error');
+        console.error("Permessi insufficienti per salvare la pianificazione.");
         return;
     }
 
     if (!currentCalculatedPlanningDetails) {
         showNotification('Nessuna pianificazione calcolata da salvare.', 'error');
+        console.error("currentCalculatedPlanningDetails è nullo o indefinito.");
         return;
     }
 
@@ -2560,15 +2571,18 @@ function savePlanning() {
         if (index > -1) {
             appData.productionPlan[index] = { ...currentCalculatedPlanningDetails };
             showNotification('Lotto di pianificazione aggiornato con successo!', 'success');
+            console.log("Lotto di pianificazione aggiornato:", appData.productionPlan[index]);
         } else {
             // Fallback if not found, add as new
             appData.productionPlan.push({ ...currentCalculatedPlanningDetails, id: generateId() });
             showNotification('Lotto di pianificazione aggiunto come nuovo (ID originale non trovato)!', 'warning');
+            console.warn("Lotto di pianificazione aggiunto come nuovo (ID originale non trovato):", currentCalculatedPlanningDetails);
         }
     } else {
         // Add new lot
         appData.productionPlan.push({ ...currentCalculatedPlanningDetails });
         showNotification('Pianificazione salvata con successo!', 'success');
+        console.log("Nuovo lotto di pianificazione aggiunto:", currentCalculatedPlanningDetails);
     }
 
     saveData();
