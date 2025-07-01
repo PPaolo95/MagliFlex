@@ -1274,7 +1274,7 @@ function updateDepartmentsTable() {
         const phaseNames = dept.phaseIds.map(id => {
             const phase = appData.phases.find(p => p.id === id);
             return phase ? phase.name : `ID:${id}`;
-        }).join(', ');
+        }).join('; ');
         row.insertCell().textContent = phaseNames;
 
         const actionsCell = row.insertCell();
@@ -1882,8 +1882,7 @@ function deleteJournalEntry(entryId) {
                         showNotification('Voce di magazzino non trovata.', 'error');
                     }
                 }
-            }
-        ]
+            ]
     );
 }
 
@@ -2305,85 +2304,92 @@ function deleteArticle(articleId) {
  * Calculates the estimated delivery date and workload for a production batch.
  */
 function calculateDelivery() {
-    if (!hasRole('planning')) {
-        showNotification('Non hai i permessi per calcolare la pianificazione.', 'error');
-        return;
-    }
-
-    const planningArticleSelect = document.getElementById('planningArticle');
-    const planningQuantityInput = document.getElementById('planningQuantity');
-    const planningStartDateInput = document.getElementById('planningStartDate');
-    const planningTypeInput = document.getElementById('planningType');
-    const planningPriorityInput = document.getElementById('planningPriority');
-    const planningNotesInput = document.getElementById('planningNotes');
-
-    if (!planningArticleSelect || !planningQuantityInput || !planningStartDateInput || !planningTypeInput || !planningPriorityInput || !planningNotesInput) {
-        showNotification('Errore: Impossibile trovare tutti i campi del modulo di pianificazione.', 'error');
-        return;
-    }
-
-    const articleId = parseInt(planningArticleSelect.value);
-    const quantity = parseInt(planningQuantityInput.value);
-    const startDateStr = planningStartDateInput.value;
-
-    if (!articleId || isNaN(quantity) || quantity <= 0 || !startDateStr) {
-        showNotification('Per favore, compila tutti i campi obbligatori (Articolo, Quantità, Data Inizio Desiderata).', 'error');
-        return;
-    }
-
-    const article = appData.articles.find(a => a.id === articleId);
-    if (!article) {
-        showNotification('Articolo selezionato non trovato.', 'error');
-        return;
-    }
-
-    const startDate = new Date(startDateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today for comparison
-
-    if (startDate < today) {
-        showNotification('La data di inizio desiderata non può essere nel passato.', 'error');
-        return;
-    }
-
-    // Check raw material availability
-    let materialShortages = [];
-    article.bom.forEach(bomItem => {
-        const material = appData.rawMaterials.find(rm => rm.id === bomItem.materialId);
-        if (!material || material.currentStock < (bomItem.quantity * quantity)) {
-            materialShortages.push(`${bomItem.quantity * quantity} ${bomItem.unit} di ${material ? material.name : 'Materia Prima Sconosciuta (ID: ' + bomItem.materialId + ')'}`);
+    try {
+        if (!hasRole('planning')) {
+            showNotification('Non hai i permessi per calcolare la pianificazione.', 'error');
+            return;
         }
-    });
 
-    if (materialShortages.length > 0) {
-        showMessageBox(
-            'Carenza Materie Prime',
-            `Impossibile procedere con la pianificazione. Scorte insufficienti per: ${materialShortages.join(', ')}. Vuoi comunque procedere?`,
-            [
-                {
-                    text: 'Annulla',
-                    className: 'btn-secondary',
-                    onClick: () => {
-                        const savePlanningBtn = document.getElementById('savePlanningBtn');
-                        const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
-                        const deliveryResultDiv = document.getElementById('deliveryResult');
-                        if (savePlanningBtn) savePlanningBtn.style.display = 'none';
-                        if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'none';
-                        if (deliveryResultDiv) deliveryResultDiv.innerHTML = '<p style="text-align: center; color: var(--text-color);">Pianificazione annullata a causa di carenza materie prime.</p>';
-                        // Ensure currentCalculatedPlanningDetails is null if calculation is cancelled
-                        currentCalculatedPlanningDetails = null;
+        const planningArticleSelect = document.getElementById('planningArticle');
+        const planningQuantityInput = document.getElementById('planningQuantity');
+        const planningStartDateInput = document.getElementById('planningStartDate');
+        const planningTypeInput = document.getElementById('planningType');
+        const planningPriorityInput = document.getElementById('planningPriority');
+        const planningNotesInput = document.getElementById('planningNotes');
+
+        if (!planningArticleSelect || !planningQuantityInput || !planningStartDateInput || !planningTypeInput || !planningPriorityInput || !planningNotesInput) {
+            showNotification('Errore: Impossibile trovare tutti i campi del modulo di pianificazione.', 'error');
+            console.error('Missing planning form elements.');
+            return;
+        }
+
+        const articleId = parseInt(planningArticleSelect.value);
+        const quantity = parseInt(planningQuantityInput.value);
+        const startDateStr = planningStartDateInput.value;
+
+        if (!articleId || isNaN(quantity) || quantity <= 0 || !startDateStr) {
+            showNotification('Per favore, compila tutti i campi obbligatori (Articolo, Quantità, Data Inizio Desiderata).', 'error');
+            return;
+        }
+
+        const article = appData.articles.find(a => a.id === articleId);
+        if (!article) {
+            showNotification('Articolo selezionato non trovato.', 'error');
+            console.error('Article not found for ID:', articleId);
+            return;
+        }
+
+        const startDate = new Date(startDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today for comparison
+
+        if (startDate < today) {
+            showNotification('La data di inizio desiderata non può essere nel passato.', 'error');
+            return;
+        }
+
+        // Check raw material availability
+        let materialShortages = [];
+        article.bom.forEach(bomItem => {
+            const material = appData.rawMaterials.find(rm => rm.id === bomItem.materialId);
+            if (!material || material.currentStock < (bomItem.quantity * quantity)) {
+                materialShortages.push(`${bomItem.quantity * quantity} ${bomItem.unit} di ${material ? material.name : 'Materia Prima Sconosciuta (ID: ' + bomItem.materialId + ')'}`);
+            }
+        });
+
+        if (materialShortages.length > 0) {
+            showMessageBox(
+                'Carenza Materie Prime',
+                `Impossibile procedere con la pianificazione. Scorte insufficienti per: ${materialShortages.join(', ')}. Vuoi comunque procedere?`,
+                [
+                    {
+                        text: 'Annulla',
+                        className: 'btn-secondary',
+                        onClick: () => {
+                            const savePlanningBtn = document.getElementById('savePlanningBtn');
+                            const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
+                            const deliveryResultDiv = document.getElementById('deliveryResult');
+                            if (savePlanningBtn) savePlanningBtn.style.display = 'none';
+                            if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'none';
+                            if (deliveryResultDiv) deliveryResultDiv.innerHTML = '<p style="text-align: center; color: var(--text-color);">Pianificazione annullata a causa di carenza materie prime.</p>';
+                            // Ensure currentCalculatedPlanningDetails is null if calculation is cancelled
+                            currentCalculatedPlanningDetails = null;
+                        }
+                    },
+                    {
+                        text: 'Procedi Comunque',
+                        className: 'btn-warning',
+                        isPrimary: true,
+                        onClick: () => proceedWithCalculation(article, quantity, startDate)
                     }
-                },
-                {
-                    text: 'Procedi Comunque',
-                    className: 'btn-warning',
-                    isPrimary: true,
-                    onClick: () => proceedWithCalculation(article, quantity, startDate)
-                }
-            ]
-        );
-    } else {
-        proceedWithCalculation(article, quantity, startDate);
+                ]
+            );
+        } else {
+            proceedWithCalculation(article, quantity, startDate);
+        }
+    } catch (error) {
+        console.error("Errore nella funzione calculateDelivery:", error);
+        showNotification("Si è verificato un errore durante il calcolo della consegna. Controlla la console per i dettagli.", 'error');
     }
 }
 
