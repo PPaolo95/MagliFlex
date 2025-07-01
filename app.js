@@ -2392,71 +2392,90 @@ function calculateDelivery() {
  * @param {Date} startDate The desired start date.
  */
 function proceedWithCalculation(article, quantity, startDate) {
-    const totalProductionTimeMinutes = article.cycle.reduce((sum, step) => sum + step.time, 0) * quantity;
-    const totalProductionTimeHours = totalProductionTimeMinutes / 60;
-
-    // Simulate daily workload distribution
-    let remainingTimeHours = totalProductionTimeHours;
+    let remainingQuantityToProduce = quantity;
     let currentDate = new Date(startDate);
     let dailyWorkload = {};
     let estimatedDeliveryDate = null;
+    const workingHoursPerDay = 8; // Assuming 8 working hours per day
 
-    // Sort phases by their associated department's machine types/finenesses for a more realistic distribution
-    // For simplicity, we'll just iterate through phases as defined in the article cycle.
-    // In a real scenario, you'd match phases to available machines/departments.
-
-    while (remainingTimeHours > 0) {
+    // Loop day by day until all quantity is produced
+    while (remainingQuantityToProduce > 0) {
         const dateKey = currentDate.toISOString().slice(0, 10);
         dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
 
-        let dailyCapacityAvailable = 8 * appData.machines.reduce((sum, m) => sum + m.capacity, 0) / 100; // Simplified: 8 hours per machine, total capacity
-        // This is a very rough estimate. A real system would assign specific machines and track their availability.
+        let minDailyPiecesAcrossPhases = Infinity; // This will be the bottleneck for the article's production today
 
-        // Distribute workload across phases/departments
-        for (const cycleStep of article.cycle) {
+        // Calculate daily capacity for each phase of the article
+        article.cycle.forEach(cycleStep => {
             const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-            if (!phase) continue;
+            if (!phase) return;
 
-            // Find a suitable department/machine for this phase
-            const suitableDepartments = appData.departments.filter(dept => dept.phaseIds.includes(phase.id));
-            if (suitableDepartments.length === 0) {
-                // If no department is suitable, this phase cannot be processed
-                showNotification(`Attenzione: Nessun reparto trovato per la fase "${phase.name}". Pianificazione potrebbe essere imprecisa.`, 'warning');
-                continue;
+            // Find machines suitable for this phase
+            const suitableMachines = appData.machines.filter(m => {
+                const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                if (!department) return false; // No department for this phase
+
+                // Check if machine type matches department's machine types
+                const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
+                // Check if fineness matches department's finenesses (if machine has fineness)
+                const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                return machineTypeMatches && finenessMatches;
+            });
+
+            let totalPhaseDailyCapacityPieces = 0; // Total pieces of *this article's phase* that can be done by all suitable machines today
+            suitableMachines.forEach(machine => {
+                // Pieces of this article's phase that can be done by this machine in an hour:
+                // This is the rate at which the machine processes its *own* type of work (machine.capacity, pieces/hour)
+                // vs. the rate at which it processes *this specific article's phase* (60 minutes / cycleStep.time minutes/piece).
+                // The effective rate is the minimum of these two.
+                const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (60 / cycleStep.time));
+                totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
+            });
+
+            // Update the bottleneck for the article's production today
+            if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
+                minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
             }
+        });
 
-            // For simplicity, assign to the first suitable department's machines
-            // Filter machines by type and fineness if applicable
-            const departmentMachines = appData.machines.filter(m =>
-                suitableDepartments.some(dept => {
-                    const machineTypeMatches = dept.machineTypes.includes(m.name.split(' ')[0]); // e.g., "Rettilinea" from "Rettilinea Finezza 3 A"
-                    const finenessMatches = !m.fineness || dept.finenesses.includes(String(m.fineness)); // Check fineness if machine has it
-                    return machineTypeMatches && finenessMatches;
-                })
-            );
-
-            if (departmentMachines.length === 0) {
-                showNotification(`Attenzione: Nessun macchinario disponibile per la fase "${phase.name}". Pianificazione potrebbe essere imprecisa.`, 'warning');
-                continue;
-            }
-
-            const machine = departmentMachines[0]; // Just pick the first one for simplicity
-
-            const timeNeededForPhase = (cycleStep.time * quantity) / 60; // Hours for this phase for total quantity
-
-            if (timeNeededForPhase > 0) {
-                const assignedQuantity = Math.min(quantity, machine.capacity); // Simplified assignment
-                const timeAssigned = (cycleStep.time * assignedQuantity) / 60;
-
-                dailyWorkload[dateKey][phase.id] = {
-                    quantity: (dailyWorkload[dateKey][phase.id]?.quantity || 0) + assignedQuantity,
-                    machine: machine.id // Assign to a specific machine
-                };
-                remainingTimeHours -= timeAssigned;
-            }
+        // If no capacity found for any phase, break to avoid infinite loop
+        if (minDailyPiecesAcrossPhases === Infinity) {
+            showNotification('Attenzione: Nessuna capacità produttiva trovata per l\'articolo. La pianificazione potrebbe non essere accurata.', 'warning');
+            estimatedDeliveryDate = currentDate; // Set current date as fallback
+            break;
         }
 
-        if (remainingTimeHours <= 0) {
+        const piecesToProduceToday = Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases);
+
+        if (piecesToProduceToday > 0) {
+            // Distribute these pieces across phases for the daily workload record
+            // For simplicity, we record that 'piecesToProduceToday' pieces of the *article* are worked on in each phase.
+            // In a real system, you'd assign specific pieces to specific machines.
+            article.cycle.forEach(cycleStep => {
+                const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
+                if (!phase) return;
+
+                const suitableMachines = appData.machines.filter(m => {
+                    const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                    if (!department) return false;
+                    const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
+                    const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                    return machineTypeMatches && finenessMatches;
+                });
+
+                if (suitableMachines.length > 0) {
+                    // Assign to the first suitable machine for simplicity in the workload record
+                    const machine = suitableMachines[0];
+                    dailyWorkload[dateKey][phase.id] = {
+                        quantity: piecesToProduceToday,
+                        machine: machine.id
+                    };
+                }
+            });
+            remainingQuantityToProduce -= piecesToProduceToday;
+        }
+
+        if (remainingQuantityToProduce <= 0) {
             estimatedDeliveryDate = currentDate;
             break;
         }
@@ -2475,7 +2494,7 @@ function proceedWithCalculation(article, quantity, startDate) {
 
     deliveryResultDiv.innerHTML = `
         <p>Data di Inizio Desiderata: <strong>${formatDate(startDate)}</strong></p>
-        <p>Tempo di Produzione Stimato: <strong>${totalProductionTimeHours.toFixed(2)} ore</strong></p>
+        <p>Quantità da Produre: <strong>${quantity} pz</strong></p>
         <p>Data di Consegna Stimata: <strong>${formatDate(estimatedDeliveryDate)}</strong></p>
         <p>Carico di Lavoro Dettagliato:</p>
         <ul id="calculatedWorkloadList"></ul>
@@ -2502,12 +2521,14 @@ function proceedWithCalculation(article, quantity, startDate) {
     }
 
     currentCalculatedPlanningDetails = {
+        id: currentEditingId.planning || generateId(), // Use existing ID if editing, otherwise generate new
         articleId: article.id, // Use article.id directly
         quantity: quantity,
         type: document.getElementById('planningType').value,
         priority: document.getElementById('planningPriority').value,
         startDate: startDateStr,
         estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
+        status: "pending", // Always pending when calculated/saved
         notes: document.getElementById('planningNotes').value.trim(),
         dailyWorkload: dailyWorkload
     };
@@ -2533,20 +2554,29 @@ function savePlanning() {
         return;
     }
 
-    const newPlanningLot = {
-        id: generateId(),
-        status: "pending", // Default status
-        ...currentCalculatedPlanningDetails
-    };
+    // If editing, find and replace the existing lot
+    if (currentEditingId.planning) {
+        const index = appData.productionPlan.findIndex(p => p.id === currentEditingId.planning);
+        if (index > -1) {
+            appData.productionPlan[index] = { ...currentCalculatedPlanningDetails };
+            showNotification('Lotto di pianificazione aggiornato con successo!', 'success');
+        } else {
+            // Fallback if not found, add as new
+            appData.productionPlan.push({ ...currentCalculatedPlanningDetails, id: generateId() });
+            showNotification('Lotto di pianificazione aggiunto come nuovo (ID originale non trovato)!', 'warning');
+        }
+    } else {
+        // Add new lot
+        appData.productionPlan.push({ ...currentCalculatedPlanningDetails });
+        showNotification('Pianificazione salvata con successo!', 'success');
+    }
 
-    appData.productionPlan.push(newPlanningLot);
     saveData();
     updateDeliverySchedule();
     updateDailyWorkloadCalendar();
     updatePlanningList();
     updateDashboardStats(); // Update dashboard after saving planning
     resetPlanningForm();
-    showNotification('Pianificazione salvata con successo!', 'success');
 }
 
 /**
@@ -2656,48 +2686,73 @@ function saveEditedPlanning() {
         // Re-calculate estimated delivery date and daily workload if article, quantity or start date changed
         const article = appData.articles.find(a => a.id === lot.articleId);
         if (article) {
-            const totalProductionTimeMinutes = article.cycle.reduce((sum, step) => sum + step.time, 0) * lot.quantity;
-            const totalProductionTimeHours = totalProductionTimeMinutes / 60;
-
-            let remainingTimeHours = totalProductionTimeHours;
+            let remainingQuantityToProduce = lot.quantity;
             let currentDate = new Date(lot.startDate);
             let dailyWorkload = {};
             let estimatedDeliveryDate = null;
+            const workingHoursPerDay = 8;
 
-            while (remainingTimeHours > 0) {
+            while (remainingQuantityToProduce > 0) {
                 const dateKey = currentDate.toISOString().slice(0, 10);
                 dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
 
-                for (const cycleStep of article.cycle) {
+                let minDailyPiecesAcrossPhases = Infinity;
+
+                article.cycle.forEach(cycleStep => {
                     const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-                    if (!phase) continue;
+                    if (!phase) return;
 
-                    const suitableDepartments = appData.departments.filter(dept => dept.phaseIds.includes(phase.id));
-                    if (suitableDepartments.length === 0) continue;
-                    const departmentMachines = appData.machines.filter(m =>
-                        suitableDepartments.some(dept => {
-                            const machineTypeMatches = dept.machineTypes.includes(m.name.split(' ')[0]);
-                            const finenessMatches = !m.fineness || dept.finenesses.includes(String(m.fineness));
-                            return machineTypeMatches && finenessMatches;
-                        })
-                    );
-                    if (departmentMachines.length === 0) continue;
-                    const machine = departmentMachines[0];
+                    const suitableMachines = appData.machines.filter(m => {
+                        const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                        if (!department) return false;
+                        const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
+                        const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                        return machineTypeMatches && finenessMatches;
+                    });
 
-                    const timeNeededForPhase = (cycleStep.time * lot.quantity) / 60;
-                    if (timeNeededForPhase > 0) {
-                        const assignedQuantity = Math.min(lot.quantity, machine.capacity);
-                        const timeAssigned = (cycleStep.time * assignedQuantity) / 60;
+                    let totalPhaseDailyCapacityPieces = 0;
+                    suitableMachines.forEach(machine => {
+                        const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (60 / cycleStep.time));
+                        totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
+                    });
 
-                        dailyWorkload[dateKey][phase.id] = {
-                            quantity: (dailyWorkload[dateKey][phase.id]?.quantity || 0) + assignedQuantity,
-                            machine: machine.id
-                        };
-                        remainingTimeHours -= timeAssigned;
+                    if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
+                        minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
                     }
+                });
+
+                if (minDailyPiecesAcrossPhases === Infinity) {
+                    estimatedDeliveryDate = currentDate; // Set current date as fallback
+                    break;
                 }
 
-                if (remainingTimeHours <= 0) {
+                const piecesToProduceToday = Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases);
+
+                if (piecesToProduceToday > 0) {
+                    article.cycle.forEach(cycleStep => {
+                        const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
+                        if (!phase) return;
+
+                        const suitableMachines = appData.machines.filter(m => {
+                            const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                            if (!department) return false;
+                            const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
+                            const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                            return machineTypeMatches && finenessMatches;
+                        });
+
+                        if (suitableMachines.length > 0) {
+                            const machine = suitableMachines[0];
+                            dailyWorkload[dateKey][phase.id] = {
+                                quantity: piecesToProduceToday,
+                                machine: machine.id
+                            };
+                        }
+                    });
+                    remainingQuantityToProduce -= piecesToProduceToday;
+                }
+
+                if (remainingQuantityToProduce <= 0) {
                     estimatedDeliveryDate = currentDate;
                     break;
                 }
