@@ -433,48 +433,111 @@ function saveData() {
  */
 function initializeSampleData() {
     console.log("Inizializzazione dati di esempio.");
+    // Helper to calculate pieces per hour from pieces per day (assuming 8-hour workday)
+    const dailyToHourlyCapacity = (piecesPerDay) => piecesPerDay / 8;
+
     appData = {
         phases: [
-            { id: 1, name: "Tessitura", time: 10 },
-            { id: 2, name: "Cucitura", time: 15 },
-            { id: 3, name: "Finitura", time: 5 }
+            { id: 1, name: "Preparazione Filati", time: 5 },
+            { id: 2, name: "Tessitura", time: 60 },
+            { id: 3, name: "Rammaglio", time: 45 },
+            { id: 4, name: "Cucitura", time: 20 },
+            { id: 5, name: "Controllo Qualità", time: 10 },
+            { id: 6, name: "Rifinitura e Stiro", time: 15 },
+            { id: 7, name: "Etichettatura e Confezionamento", time: 5 }
         ],
         machines: [
-            { id: 101, name: "Rettilinea A", capacity: 100, currentUsage: 0 },
-            { id: 102, name: "Rettilinea B", capacity: 120, currentUsage: 0 },
-            { id: 103, name: "Taglia e Cuci", capacity: 200, currentUsage: 0 }
+            // Rettilinee
+            { id: 101, name: "Rettilinea F3 A", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
+            { id: 102, name: "Rettilinea F3 B", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
+            { id: 103, name: "Rettilinea F5 A", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
+            { id: 104, name: "Rettilinea F5 B", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
+            { id: 105, name: "Rettilinea F7 A", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 106, name: "Rettilinea F7 B", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 107, name: "Rettilinea F7 C", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 108, name: "Rettilinea F12 A", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 109, name: "Rettilinea F12 B", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 110, name: "Rettilinea F12 C", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 111, name: "Rettilinea F12 D", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 112, name: "Rettilinea F12 E", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 113, name: "Rettilinea F12 F", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 114, name: "Rettilinea F12 G", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 115, name: "Rettilinea F14 A", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            { id: 116, name: "Rettilinea F14 B", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            { id: 117, name: "Rettilinea F14 C", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            // Integrale
+            { id: 118, name: "Integrale F7 A", capacity: dailyToHourlyCapacity(12), currentUsage: 0, fineness: 7 }
         ],
         departments: [
-            { id: 1001, name: "Reparto Tessitura", machineTypes: ["Rettilinea"], finenesses: ["3", "5", "7", "12"], phaseIds: [1] },
-            { id: 1002, name: "Reparto Confezione", machineTypes: ["Taglia e Cuci"], finenesses: [], phaseIds: [2, 3] }
+            { id: 1001, name: "Reparto Tessitura Rettilinea", machineTypes: ["Rettilinea"], finenesses: ["3", "5", "7", "12", "14"], phaseIds: [2] }, // Tessitura
+            { id: 1002, name: "Reparto Tessitura Integrale", machineTypes: ["Integrale"], finenesses: ["7"], phaseIds: [2] }, // Tessitura
+            { id: 1003, name: "Reparto Preparazione", machineTypes: [], finenesses: [], phaseIds: [1] }, // Preparazione Filati
+            { id: 1004, name: "Reparto Rammaglio", machineTypes: [], finenesses: [], phaseIds: [3] }, // Rammaglio
+            { id: 1005, name: "Reparto Cucitura", machineTypes: ["Taglia e Cuci"], finenesses: [], phaseIds: [4] }, // Cucitura
+            { id: 1006, name: "Reparto Controllo Qualità", machineTypes: [], finenesses: [], phaseIds: [5] }, // Controllo Qualità
+            { id: 1007, name: "Reparto Rifinitura", machineTypes: [], finenesses: [], phaseIds: [6] }, // Rifinitura e Stiro
+            { id: 1008, name: "Reparto Confezionamento", machineTypes: [], finenesses: [], phaseIds: [7] } // Etichettatura e Confezionamento
         ],
         rawMaterials: [
             { id: 201, name: "Filato di Cotone", unit: "kg", currentStock: 500 },
             { id: 202, name: "Bottoni", unit: "pz", currentStock: 1000 },
-            { id: 203, name: "Etichette", unit: "pz", currentStock: 2000 }
+            { id: 203, name: "Etichette", unit: "pz", currentStock: 2000 },
+            { id: 204, name: "Filato di Lana Merino", unit: "kg", currentStock: 300 },
+            { id: 205, name: "Cerniere", unit: "pz", currentStock: 500 }
         ],
         warehouseJournal: [
             { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 201, type: "load", quantity: 500, reference: "Fornitore X" },
-            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 202, type: "load", quantity: 1000, reference: "Fornitore Y" }
+            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 202, type: "load", quantity: 1000, reference: "Fornitore Y" },
+            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 204, type: "load", quantity: 300, reference: "Fornitore Z" }
         ],
         articles: [
             {
                 id: 301,
                 code: "ART-001",
-                description: "Maglietta Basic",
+                description: "Maglietta Basic Cotone",
                 color: "Bianco",
                 client: "Client A",
-                cycle: [{ phaseId: 1, time: 10 }, { phaseId: 2, time: 15 }],
+                cycle: [
+                    { phaseId: 1, time: 5 }, // Preparazione Filati
+                    { phaseId: 2, time: 60 }, // Tessitura
+                    { phaseId: 4, time: 20 }, // Cucitura
+                    { phaseId: 5, time: 10 }, // Controllo Qualità
+                    { phaseId: 6, time: 15 }, // Rifinitura e Stiro
+                    { phaseId: 7, time: 5 }  // Etichettatura e Confezionamento
+                ],
                 bom: [{ materialId: 201, quantity: 0.2, unit: "kg" }]
             },
             {
                 id: 302,
                 code: "ART-002",
-                description: "Felpa con Cappuccio",
+                description: "Felpa con Cappuccio Lana",
                 color: "Grigio",
                 client: "Client B",
-                cycle: [{ phaseId: 1, time: 12 }, { phaseId: 2, time: 20 }, { phaseId: 3, time: 8 }],
-                bom: [{ materialId: 201, quantity: 0.5, unit: "kg" }, { materialId: 202, quantity: 5, unit: "pz" }]
+                cycle: [
+                    { phaseId: 1, time: 7 }, // Preparazione Filati
+                    { phaseId: 2, time: 70 }, // Tessitura
+                    { phaseId: 3, time: 45 }, // Rammaglio
+                    { phaseId: 4, time: 25 }, // Cucitura
+                    { phaseId: 5, time: 12 }, // Controllo Qualità
+                    { phaseId: 6, time: 20 }, // Rifinitura e Stiro
+                    { phaseId: 7, time: 8 }  // Etichettatura e Confezionamento
+                ],
+                bom: [{ materialId: 204, quantity: 0.5, unit: "kg" }, { materialId: 205, quantity: 1, unit: "pz" }]
+            },
+            {
+                id: 303,
+                code: "ART-003",
+                description: "Maglione Integrale",
+                color: "Nero",
+                client: "Client C",
+                cycle: [
+                    { phaseId: 1, time: 8 }, // Preparazione Filati
+                    { phaseId: 2, time: 90 }, // Tessitura (Integrale)
+                    { phaseId: 5, time: 15 }, // Controllo Qualità
+                    { phaseId: 6, time: 20 }, // Rifinitura e Stiro
+                    { phaseId: 7, time: 10 }  // Etichettatura e Confezionamento
+                ],
+                bom: [{ materialId: 204, quantity: 0.7, unit: "kg" }]
             }
         ],
         productionPlan: [
@@ -490,12 +553,12 @@ function initializeSampleData() {
                 notes: "Urgent order",
                 dailyWorkload: {
                     [new Date().toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 101 },
-                        2: { quantity: 50, machine: 103 }
+                        1: { quantity: 50, machine: 101 }, // Preparazione Filati
+                        2: { quantity: 50, machine: 103 } // Tessitura
                     },
                     [addDays(new Date(), 1).toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 102 },
-                        2: { quantity: 50, machine: 103 }
+                        1: { quantity: 50, machine: 102 }, // Preparazione Filati
+                        2: { quantity: 50, machine: 104 } // Tessitura
                     }
                 }
             },
@@ -511,12 +574,33 @@ function initializeSampleData() {
                 notes: "New sample for client C",
                 dailyWorkload: {
                     [addDays(new Date(), 7).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 101 },
-                        2: { quantity: 25, machine: 103 }
+                        1: { quantity: 25, machine: 105 }, // Preparazione Filati
+                        2: { quantity: 25, machine: 108 } // Tessitura
                     },
                     [addDays(new Date(), 8).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 102 },
-                        2: { quantity: 25, machine: 103 }
+                        1: { quantity: 25, machine: 106 }, // Preparazione Filati
+                        2: { quantity: 25, machine: 109 } // Tessitura
+                    }
+                }
+            },
+            {
+                id: generateId(),
+                articleId: 303,
+                quantity: 20,
+                type: "production",
+                priority: "low",
+                startDate: addDays(new Date(), 14).toISOString().slice(0, 10),
+                estimatedDeliveryDate: addDays(new Date(), 18).toISOString().slice(0, 10),
+                status: "pending",
+                notes: "First batch of integral sweaters",
+                dailyWorkload: {
+                    [addDays(new Date(), 14).toISOString().slice(0, 10)]: {
+                        1: { quantity: 10, machine: 118 }, // Preparazione Filati, Integrale
+                        5: { quantity: 10, machine: 103 } // Controllo Qualità (example machine)
+                    },
+                    [addDays(new Date(), 15).toISOString().slice(0, 10)]: {
+                        1: { quantity: 10, machine: 118 }, // Preparazione Filati, Integrale
+                        5: { quantity: 10, machine: 104 } // Controllo Qualità (example machine)
                     }
                 }
             }
@@ -2552,7 +2636,7 @@ function saveEditedPlanning() {
 
         // Basic validation
         if (!newArticleId || isNaN(newQuantity) || newQuantity <= 0 || !newStartDate) {
-            showNotification('Per favore, compila tutti i campi obbligatori nel modulo di modifica.', 'error');
+            showNotification('Per favor, compila tutti i campi obbligatori nel modulo di modifica.', 'error');
             return;
         }
 
