@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MagliFlex - Pianificazione Produzione</title>
+    <!-- Collegamento al file CSS esterno -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Collegamento a Font Awesome per le icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Overlay di Login -->
+    <div id="loginOverlay" class="modal-overlay show" role="dialog" aria-modal="true" aria-labelledby="login-title">
+        <div class="login-container">
+            <h2 id="login-title">Accedi a MagliFlex</h2>
+            <div class="form-group">
+                <label for="usernameInput">Nome Utente:</label>
+                <input type="text" id="usernameInput" placeholder="Inserisci il tuo nome utente" aria-label="Nome Utente" tabindex="0">
+            </div>
+            <div class="form-group">
+                <label for="passwordInput">Password:</label>
+                <input type="password" id="passwordInput" placeholder="Inserisci la tua password" aria-label="Password" tabindex="0" onkeydown="handleLoginEnter(event)">
+            </div>
+            <button class="btn btn-primary login-button" id="loginButton" aria-label="Login" tabindex="0">Login</button>
+            <p class="login-info">Inserisci un nome utente qualsiasi per accedere (es. admin, planner, warehouse) e la stessa parola come password.</p>
+        </div>
+    </div>
+
+    <!-- Contenuto principale dell'applicazione -->
+    <div class="container" id="appContent" style="display: none;">
+        <div class="top-bar">
+            <button class="hamburger-btn" aria-label="Apri menu di navigazione" tabindex="0" onclick="toggleNavMenu()">
+                <span class="hamburger-icon"></span>
+                <span class="hamburger-icon"></span>
+                <span class="hamburger-icon"></span>
+            </button>
+            <div class="logo">
+                <i class="fas fa-industry"></i> MagliFlex
+            </div>
+            <div class="top-right-nav">
+                <button class="icon-button theme-toggle-btn" onclick="toggleTheme()" aria-label="Cambia tema (chiaro/scuro)" tabindex="0">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="icon-button notification-button" onclick="openNotificationsModal()" aria-label="Apri notifiche" tabindex="0">
+                    <i class="fas fa-bell"></i>
+                    <span id="notificationBadge">0</span>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="logoutUser()" aria-label="Logout" tabindex="0">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div id="mainLayout">
+            <!-- Menu di Navigazione -->
+            <nav class="nav-menu" id="mainNavMenu">
+                <ul class="nav-list">
+                    <li><button class="nav-btn active" data-page-id="dashboard" aria-label="Vai alla Dashboard" tabindex="0"><i class="fas fa-tachometer-alt"></i> Dashboard</button></li>
+                    <li><button class="nav-btn" data-page-id="schedule" aria-label="Vai alla Pianificazione e Calendario" tabindex="0"><i class="fas fa-calendar-alt"></i> Pianificazione & Calendario</button></li>
+                    <li><button class="nav-btn" data-page-id="planning" aria-label="Vai alla Creazione Lotti di Produzione" tabindex="0"><i class="fas fa-project-diagram"></i> Crea Lotto Produzione</button></li>
+                    <li><button class="nav-btn" data-page-id="articles" aria-label="Vai alla Gestione Articoli" tabindex="0"><i class="fas fa-tshirt"></i> Gestione Articoli</button></li>
+                    <li><button class="nav-btn" data-page-id="rawMaterials" aria-label="Vai alla Gestione Materie Prime" tabindex="0"><i class="fas fa-boxes"></i> Materie Prime & Magazzino</button></li>
+                    <li><button class="nav-btn" data-page-id="phases" aria-label="Vai alla Gestione Fasi di Lavorazione" tabindex="0"><i class="fas fa-tasks"></i> Gestione Fasi</button></li>
+                    <li><button class="nav-btn" data-page-id="machines" aria-label="Vai alla Gestione Macchinari" tabindex="0"><i class="fas fa-cogs"></i> Gestione Macchinari</button></li>
+                    <li><button class="nav-btn" data-page-id="departments" aria-label="Vai alla Gestione Reparti" tabindex="0"><i class="fas fa-building"></i> Gestione Reparti</button></li>
+                    <li><button class="nav-btn" data-page-id="users" aria-label="Vai alla Gestione Utenti" tabindex="0"><i class="fas fa-users"></i> Gestione Utenti</button></li>
+                </ul>
+                <div class="nav-footer">
+                    <div class="file-input-wrapper">
+                        <button class="btn btn-info btn-sm">
+                            <i class="fas fa-upload"></i> Importa Dati
+                        </button>
+                        <input type="file" id="importDataFile" accept=".json" aria-label="Importa dati da file JSON" tabindex="0">
+                    </div>
+                    <button class="btn btn-info btn-sm" onclick="exportDataAsJson()" aria-label="Esporta dati in file JSON" tabindex="0">
+                        <i class="fas fa-download"></i> Esporta Dati
+                    </button>
+                    <button class="btn btn-secondary btn-sm mobile-only" onclick="logoutUser()" aria-label="Logout" tabindex="0">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Contenuto delle Pagine -->
+            <main class="content">
+                <!-- Dashboard -->
+                <section id="dashboard" class="page active">
+                    <h2>Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3>Statistiche Generali</h3>
+                            <div id="generalStats">
+                                <p>Caricamento statistiche...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Stato Magazzino Materie Prime</h3>
+                            <div id="rawMaterialStockSummary">
+                                <p>Caricamento riepilogo magazzino...</p>
+                            </div>
+                        </div>
+                        <div class="card full-width">
+                            <div id="machineStats">
+                                <p>Caricamento utilizzo macchinari...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div id="upcomingDeliveries">
+                                <p>Caricamento consegne imminenti...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div id="workloadChart">
+                                <p class="chart-placeholder">Il grafico del carico di lavoro settimanale sarà visualizzato qui.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pianificazione & Calendario -->
+                <section id="schedule" class="page">
+                    <h2>Pianificazione & Calendario</h2>
+
+                    <div class="card">
+                        <h3>Calendario Consegne</h3>
+                        <div class="calendar-nav">
+                            <button class="btn btn-sm btn-primary" onclick="navigateDeliveryWeek(-7)" aria-label="Settimana precedente consegne" tabindex="0"><i class="fas fa-chevron-left"></i> Prec. Settimana</button>
+                            <span id="currentDeliveryWeekRange"></span>
+                            <button class="btn btn-sm btn-primary" onclick="navigateDeliveryWeek(7)" aria-label="Settimana successiva consegne" tabindex="0">Prox. Settimana <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div id="deliverySchedule" class="calendar-grid">
+                            <!-- Giorni del calendario di consegna verranno popolati qui -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Carico di Lavoro Giornaliero</h3>
+                        <div class="calendar-nav">
+                            <button class="btn btn-sm btn-primary" onclick="navigateWorkloadWeek(-7)" aria-label="Settimana precedente carico di lavoro" tabindex="0"><i class="fas fa-chevron-left"></i> Prec. Settimana</button>
+                            <span id="currentWorkloadWeekRange"></span>
+                            <button class="btn btn-sm btn-primary" onclick="navigateWorkloadWeek(7)" aria-label="Settimana successiva carico di lavoro" tabindex="0">Prox. Settimana <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div id="dailyWorkloadCalendar" class="calendar-grid">
+                            <!-- Carico di lavoro giornaliero verrà popolato qui -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Lotti di Pianificazione Dettagliati</h3>
+                        <div id="planningList">
+                            <!-- Elenco dettagliato dei lotti di pianificazione -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Crea Lotto Produzione -->
+                <section id="planning" class="page">
+                    <h2>Crea Lotto di Produzione / Campionatura</h2>
+                    <div class="card">
+                        <h3>Dettagli Lotto</h3>
+                        <div class="planning-form-grid">
+                            <div class="form-group">
+                                <label for="planningArticle">Articolo:</label>
+                                <select id="planningArticle" aria-label="Seleziona Articolo" tabindex="0"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="planningQuantity">Quantità:</label>
+                                <input type="number" id="planningQuantity" min="1" step="1" placeholder="Quantità" aria-label="Quantità" tabindex="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="planningType">Tipo:</label>
+                                <select id="planningType" aria-label="Tipo di Produzione" tabindex="0">
+                                    <option value="production">Produzione</option>
+                                    <option value="sample">Campionatura</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="planningPriority">Priorità:</label>
+                                <select id="planningPriority" aria-label="Priorità" tabindex="0">
+                                    <option value="low">Bassa</option>
+                                    <option value="medium">Media</option>
+                                    <option value="high">Alta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="planningStartDate">Data Inizio Desiderata:</label>
+                                <input type="date" id="planningStartDate" aria-label="Data Inizio Desiderata" tabindex="0">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="planningNotes">Note:</label>
+                                <textarea id="planningNotes" rows="3" placeholder="Note aggiuntive sulla pianificazione" aria-label="Note aggiuntive" tabindex="0"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="calculateDelivery()" aria-label="Calcola Consegna Stimata" tabindex="0"><i class="fas fa-calculator"></i> Calcola Consegna</button>
+                        </div>
+
+                        <div id="deliveryResult" class="result-box">
+                            <p style="text-align: center; color: var(--text-color);">Seleziona un articolo, quantità e data per calcolare la data di consegna stimata.</p>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 1rem;">
+                            <button class="btn btn-success" id="savePlanningBtn" style="display: none;" onclick="savePlanning()" aria-label="Salva Pianificazione" tabindex="0"><i class="fas fa-save"></i> Salva Pianificazione</button>
+                            <button class="btn btn-danger" id="cancelPlanningBtn" style="display: none;" onclick="resetPlanningForm()" aria-label="Annulla Pianificazione" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestione Articoli -->
+                <section id="articles" class="page">
+                    <h2>Gestione Articoli</h2>
+                    <div class="card">
+                        <h3>Aggiungi / Modifica Articolo</h3>
+                        <div class="form-group">
+                            <label for="articleId">Seleziona Articolo:</label>
+                            <select id="articleId" onchange="loadArticleForEdit()" aria-label="Seleziona Articolo da modificare" tabindex="0"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="articleCode">Codice Articolo:</label>
+                            <input type="text" id="articleCode" placeholder="Es: ART-001" aria-label="Codice Articolo" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="articleDescription">Descrizione:</label>
+                            <input type="text" id="articleDescription" placeholder="Es: Maglietta Basic" aria-label="Descrizione Articolo" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="articleColor">Colore:</label>
+                            <input type="text" id="articleColor" placeholder="Es: Blu" aria-label="Colore Articolo" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="articleClient">Cliente:</label>
+                            <input type="text" id="articleClient" placeholder="Es: Cliente Alfa" aria-label="Cliente Articolo" tabindex="0">
+                        </div>
+
+                        <div class="dynamic-list-container">
+                            <h4>Ciclo di Lavorazione</h4>
+                            <div id="cycleSteps">
+                                <!-- I passi del ciclo verranno aggiunti qui dinamicamente -->
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="addCycleStep()" aria-label="Aggiungi fase al ciclo" tabindex="0"><i class="fas fa-plus"></i> Aggiungi Fase</button>
+                        </div>
+
+                        <div class="dynamic-list-container">
+                            <h4>Distinta Base (BOM)</h4>
+                            <div id="bomItems">
+                                <!-- Gli elementi della distinta base verranno aggiunti qui dinamicamente -->
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="addBomItem()" aria-label="Aggiungi materia prima alla distinta base" tabindex="0"><i class="fas fa-plus"></i> Aggiungi Materia Prima</button>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="saveArticleBtn" onclick="saveArticle()" aria-label="Salva Articolo" tabindex="0"><i class="fas fa-plus-circle"></i> Aggiungi Articolo</button>
+                            <button class="btn btn-danger" id="cancelArticleBtn" style="display: none;" onclick="resetArticleForm()" aria-label="Annulla modifiche articolo" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Elenco Articoli</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Codice</th>
+                                        <th>Descrizione</th>
+                                        <th>Colore</th>
+                                        <th>Cliente</th>
+                                        <th>Ciclo</th>
+                                        <th>Distinta Base</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="articlesTable">
+                                    <!-- I dati degli articoli verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sezione Materie Prime -->
+                <section id="rawMaterials" class="page">
+                    <h2>Gestione Materie Prime e Magazzino</h2>
+
+                    <div class="card">
+                        <h3>Aggiungi / Carica Materia Prima</h3>
+                        <div class="form-group">
+                            <label for="rawMaterialSelect">Materia Prima Esistente:</label>
+                            <select id="rawMaterialSelect" onchange="toggleNewRawMaterialInput()" aria-label="Seleziona materia prima" tabindex="0"></select>
+                        </div>
+                        <div class="form-group" id="newRawMaterialNameGroup" style="display: none;">
+                            <label for="newRawMaterialName">Nome Nuova Materia Prima:</label>
+                            <input type="text" id="newRawMaterialName" placeholder="Es: Filato di Lana" aria-label="Nome Nuova Materia Prima">
+                        </div>
+                        <div class="form-group">
+                            <label for="rawMaterialUnit">Unità di Misura:</label>
+                            <input type="text" id="rawMaterialUnit" placeholder="Es: kg, pz, m" aria-label="Unità di Misura">
+                        </div>
+                        <div class="form-group">
+                            <label for="rawMaterialQuantity">Quantità:</label>
+                            <input type="number" id="rawMaterialQuantity" min="0" step="0.01" value="0" aria-label="Quantità">
+                        </div>
+                        <div class="form-group">
+                            <label for="rawMaterialLoadDate">Data Carico/Consumo:</label>
+                            <input type="date" id="rawMaterialLoadDate" aria-label="Data Carico o Consumo">
+                        </div>
+                        <div class="form-group">
+                            <label for="rawMaterialBarcode">Riferimento / Barcode:</label>
+                            <input type="text" id="rawMaterialBarcode" onchange="handleBarcodeInput(event)" placeholder="Riferimento o codice a barre" aria-label="Riferimento o Barcode">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="saveRawMaterialBtn" onclick="addRawMaterialOrStock()" aria-label="Aggiungi o carica materia prima" tabindex="0">Aggiungi/Carica Scorta</button>
+                            <button class="btn btn-danger" id="cancelRawMaterialBtn" style="display: none;" onclick="resetRawMaterialForm()" aria-label="Annulla modifiche materia prima" tabindex="0">Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Scorte Attuali Materie Prime</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Materia Prima</th>
+                                        <th>Scorta Attuale</th>
+                                        <th>Unità</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rawMaterialsStockTable">
+                                    <!-- I dati delle scorte verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Giornale di Magazzino</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Materia Prima</th>
+                                        <th>Tipo</th>
+                                        <th>Quantità</th>
+                                        <th>Stato</th>
+                                        <th>Riferimento</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="warehouseJournalTable">
+                                    <!-- I dati del giornale verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestione Fasi -->
+                <section id="phases" class="page">
+                    <h2>Gestione Fasi di Lavorazione</h2>
+                    <div class="card">
+                        <h3>Aggiungi / Modifica Fase</h3>
+                        <div class="form-group">
+                            <label for="phaseName">Nome Fase:</label>
+                            <input type="text" id="phaseName" placeholder="Es: Tessitura" aria-label="Nome Fase" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="phaseTime">Tempo di Lavorazione (min/pz):</label>
+                            <input type="number" id="phaseTime" min="0.1" step="0.1" placeholder="Minuti per pezzo" aria-label="Tempo di Lavorazione" tabindex="0">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="savePhaseBtn" onclick="addPhase()" aria-label="Salva Fase" tabindex="0"><i class="fas fa-plus-circle"></i> Aggiungi Fase</button>
+                            <button class="btn btn-danger" id="cancelPhaseBtn" style="display: none;" onclick="resetPhaseForm()" aria-label="Annulla modifiche fase" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Elenco Fasi</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Tempo (min/pz)</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="phasesTable">
+                                    <!-- I dati delle fasi verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestione Macchinari -->
+                <section id="machines" class="page">
+                    <h2>Gestione Macchinari</h2>
+                    <div class="card">
+                        <h3>Aggiungi / Modifica Macchinario</h3>
+                        <div class="form-group">
+                            <label for="machineName">Nome Macchinario:</label>
+                            <input type="text" id="machineName" placeholder="Es: Rettilinea A" aria-label="Nome Macchinario" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="machineCapacity">Capacità Oraria (pz/ora):</label>
+                            <input type="number" id="machineCapacity" min="1" step="1" placeholder="Pezzi per ora" aria-label="Capacità Oraria" tabindex="0">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="saveMachineBtn" onclick="addMachine()" aria-label="Salva Macchinario" tabindex="0"><i class="fas fa-plus-circle"></i> Aggiungi Macchinario</button>
+                            <button class="btn btn-danger" id="cancelMachineBtn" style="display: none;" onclick="resetMachineForm()" aria-label="Annulla modifiche macchinario" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Elenco Macchinari</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Capacità (pz/ora)</th>
+                                        <th>Utilizzo Attuale</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="machinesTable">
+                                    <!-- I dati dei macchinari verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestione Reparti -->
+                <section id="departments" class="page">
+                    <h2>Gestione Reparti</h2>
+                    <div class="card">
+                        <h3>Aggiungi / Modifica Reparto</h3>
+                        <div class="form-group">
+                            <label for="departmentId">Seleziona Reparto:</label>
+                            <select id="departmentId" onchange="loadDepartmentForEdit()" aria-label="Seleziona Reparto da modificare" tabindex="0"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="departmentName">Nome Reparto:</label>
+                            <input type="text" id="departmentName" placeholder="Es: Reparto Tessitura" aria-label="Nome Reparto" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="departmentMachineTypes">Tipi di Macchinari (separati da virgola):</label>
+                            <input type="text" id="departmentMachineTypes" placeholder="Es: Rettilinea, Taglia e Cuci" aria-label="Tipi di Macchinari" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="departmentFinenesses">Finezze Supportate (separati da virgola):</label>
+                            <input type="text" id="departmentFinenesses" placeholder="Es: 3, 5, 7, 12" aria-label="Finezze Supportate" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="departmentPhaseIds">Fasi di Lavorazione Associate (seleziona più opzioni con CTRL/CMD):</label>
+                            <select id="departmentPhaseIds" multiple size="5" aria-label="Fasi di Lavorazione Associate" tabindex="0">
+                                <!-- Le fasi verranno popolate qui -->
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="saveDepartmentBtn" onclick="saveDepartment()" aria-label="Salva Reparto" tabindex="0"><i class="fas fa-plus-circle"></i> Aggiungi Reparto</button>
+                            <button class="btn btn-danger" id="cancelDepartmentBtn" style="display: none;" onclick="resetDepartmentForm()" aria-label="Annulla modifiche reparto" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Elenco Reparti</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Tipi Macchinari</th>
+                                        <th>Finezze</th>
+                                        <th>Fasi Associate</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="departmentsTable">
+                                    <!-- I dati dei reparti verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestione Utenti -->
+                <section id="users" class="page">
+                    <h2>Gestione Utenti</h2>
+                    <div class="card">
+                        <h3>Aggiungi / Modifica Utente</h3>
+                        <div class="form-group">
+                            <label for="usernameInputForm">Nome Utente:</label>
+                            <input type="text" id="usernameInputForm" placeholder="Nome utente" aria-label="Nome Utente" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="passwordInputForm">Password (lascia vuoto per non modificare):</label>
+                            <input type="password" id="passwordInputForm" placeholder="Password" aria-label="Password" tabindex="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Ruoli:</label>
+                            <div id="userRolesCheckboxes" class="checkbox-group">
+                                <label><input type="checkbox" value="admin" aria-label="Ruolo Amministratore" tabindex="0"> Amministratore</label>
+                                <label><input type="checkbox" value="planning" aria-label="Ruolo Pianificatore" tabindex="0"> Pianificatore</label>
+                                <label><input type="checkbox" value="warehouse" aria-label="Ruolo Magazziniere" tabindex="0"> Magazziniere</label>
+                            </div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="forcePasswordChangeCheckbox" aria-label="Forza cambio password al prossimo accesso" tabindex="0"> Forza cambio password al prossimo accesso
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="saveUserBtn" onclick="saveUser()" aria-label="Salva Utente" tabindex="0"><i class="fas fa-plus-circle"></i> Aggiungi Utente</button>
+                            <button class="btn btn-danger" id="cancelUserBtn" style="display: none;" onclick="resetUserForm()" aria-label="Annulla modifiche utente" tabindex="0"><i class="fas fa-times"></i> Annulla</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Elenco Utenti</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome Utente</th>
+                                        <th>Password</th>
+                                        <th>Ruoli</th>
+                                        <th>Forza Cambio PWD</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- I dati degli utenti verranno popolati qui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal per Messaggi Personalizzati (MessageBox) -->
+    <div id="messageBoxModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="message-box-title">
+        <div class="modal-content">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-text"></p>
+            <div class="modal-buttons" id="message-box-buttons">
+                <!-- Buttons will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Cambio Password -->
+    <div id="changePasswordModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="change-password-modal-title">
+        <div class="modal-content">
+            <h3 id="change-password-modal-title">Cambia Password</h3>
+            <div class="form-group">
+                <label for="oldPasswordChange">Vecchia Password:</label>
+                <input type="password" id="oldPasswordChange" aria-label="Vecchia Password" tabindex="0">
+            </div>
+            <div class="form-group">
+                <label for="newPasswordChange">Nuova Password:</label>
+                <input type="password" id="newPasswordChange" aria-label="Nuova Password" tabindex="0">
+            </div>
+            <div class="form-group">
+                <label for="confirmNewPasswordChange">Conferma Nuova Password:</label>
+                <input type="password" id="confirmNewPasswordChange" aria-label="Conferma Nuova Password" tabindex="0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeChangePasswordModal()" aria-label="Annulla cambio password" tabindex="0">Annulla</button>
+                <button class="btn btn-primary" id="confirmChangePasswordBtn" aria-label="Conferma cambio password" tabindex="0">Cambia Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Registrazione Consumo Effettivo -->
+    <div id="actualConsumptionModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="actual-consumption-modal-title">
+        <div class="modal-content">
+            <h3 id="actual-consumption-modal-title">Registra Consumo Effettivo</h3>
+            <p id="modalRmInfo"></p>
+            <div class="form-group">
+                <label for="actualConsumedQuantity">Quantità Effettivamente Consumata:</label>
+                <input type="number" id="actualConsumedQuantity" min="0.01" step="0.01" aria-label="Quantità Effettivamente Consumata" tabindex="0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="cancelActualConsumptionBtn" aria-label="Annulla registrazione consumo" tabindex="0">Annulla</button>
+                <button class="btn btn-primary" id="confirmActualConsumptionBtn" aria-label="Conferma registrazione consumo" tabindex="0">Conferma Consumo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Modifica Lotto di Pianificazione -->
+    <div id="editPlanningModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-planning-modal-title">
+        <div class="modal-content">
+            <h3 id="edit-planning-modal-title">Modifica Lotto di Pianificazione</h3>
+            <input type="hidden" id="editPlanningLotId">
+            <div class="form-group">
+                <label for="editPlanningArticle">Articolo:</label>
+                <select id="editPlanningArticle" aria-label="Articolo" tabindex="0"></select>
+            </div>
+            <div class="form-group">
+                <label for="editPlanningQuantity">Quantità:</label>
+                <input type="number" id="editPlanningQuantity" min="1" step="1" aria-label="Quantità" tabindex="0">
+            </div>
+            <div class="form-group">
+                <label for="editPlanningType">Tipo:</label>
+                <select id="editPlanningType" aria-label="Tipo" tabindex="0">
+                    <option value="production">Produzione</option>
+                    <option value="sample">Campionatura</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editPlanningPriority">Priorità:</label>
+                <select id="editPlanningPriority" aria-label="Priorità" tabindex="0">
+                    <option value="low">Bassa</option>
+                    <option value="medium">Media</option>
+                    <option value="high">Alta</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editPlanningStartDate">Data Inizio Desiderata:</label>
+                <input type="date" id="editPlanningStartDate" aria-label="Data Inizio Desiderata" tabindex="0">
+            </div>
+            <div class="form-group">
+                <label for="editPlanningNotes">Note:</label>
+                <textarea id="editPlanningNotes" rows="3" aria-label="Note" tabindex="0"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="saveEditedPlanningBtn" aria-label="Salva modifiche al lotto di pianificazione" tabindex="0">Salva Modifiche</button>
+                <button class="btn btn-danger" id="cancelEditPlanningBtn" aria-label="Annulla modifiche al lotto di pianificazione" tabindex="0">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per Notifiche -->
+    <div id="notificationsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="notifications-modal-title">
+        <div class="modal-content">
+            <h4 id="notifications-modal-title">Archivio Notifiche</h4>
+            <div class="notification-filter-buttons">
+                <button id="filterUnread" class="active" onclick="filterNotifications('unread')" aria-label="Mostra solo notifiche non lette" tabindex="0">Non Letti</button>
+                <button id="filterAll" onclick="filterNotifications('all')" aria-label="Mostra tutte le notifiche" tabindex="0">Tutti</button>
+            </div>
+            <div id="notificationsList" role="log" aria-live="polite" aria-atomic="false">
+                <p style="text-align: center; color: #888;">Nessun messaggio.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeNotificationsModal()" aria-label="Chiudi archivio notifiche" tabindex="0">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenitore per le notifiche Toast -->
+    <div id="notificationContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
