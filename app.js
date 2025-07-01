@@ -448,35 +448,35 @@ function initializeSampleData() {
         ],
         machines: [
             // Rettilinee
-            { id: 101, name: "Rettilinea F3 A", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
-            { id: 102, name: "Rettilinea F3 B", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
-            { id: 103, name: "Rettilinea F5 A", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
-            { id: 104, name: "Rettilinea F5 B", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
-            { id: 105, name: "Rettilinea F7 A", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
-            { id: 106, name: "Rettilinea F7 B", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
-            { id: 107, name: "Rettilinea F7 C", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
-            { id: 108, name: "Rettilinea F12 A", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 109, name: "Rettilinea F12 B", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 110, name: "Rettilinea F12 C", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 111, name: "Rettilinea F12 D", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 112, name: "Rettilinea F12 E", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 113, name: "Rettilinea F12 F", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 114, name: "Rettilinea F12 G", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
-            { id: 115, name: "Rettilinea F14 A", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
-            { id: 116, name: "Rettilinea F14 B", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
-            { id: 117, name: "Rettilinea F14 C", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            { id: 101, name: "Rettilinea Finezza 3 A", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
+            { id: 102, name: "Rettilinea Finezza 3 B", capacity: dailyToHourlyCapacity(8), currentUsage: 0, fineness: 3 },
+            { id: 103, name: "Rettilinea Finezza 5 A", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
+            { id: 104, name: "Rettilinea Finezza 5 B", capacity: dailyToHourlyCapacity(15), currentUsage: 0, fineness: 5 },
+            { id: 105, name: "Rettilinea Finezza 7 A", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 106, name: "Rettilinea Finezza 7 B", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 107, name: "Rettilinea Finezza 7 C", capacity: dailyToHourlyCapacity(25), currentUsage: 0, fineness: 7 },
+            { id: 108, name: "Rettilinea Finezza 12 A", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 109, name: "Rettilinea Finezza 12 B", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 110, name: "Rettilinea Finezza 12 C", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 111, name: "Rettilinea Finezza 12 D", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 112, name: "Rettilinea Finezza 12 E", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 113, name: "Rettilinea Finezza 12 F", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 114, name: "Rettilinea Finezza 12 G", capacity: dailyToHourlyCapacity(35), currentUsage: 0, fineness: 12 },
+            { id: 115, name: "Rettilinea Finezza 14 A", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            { id: 116, name: "Rettilinea Finezza 14 B", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
+            { id: 117, name: "Rettilinea Finezza 14 C", capacity: dailyToHourlyCapacity(40), currentUsage: 0, fineness: 14 },
             // Integrale
-            { id: 118, name: "Integrale F7 A", capacity: dailyToHourlyCapacity(12), currentUsage: 0, fineness: 7 }
+            { id: 118, name: "Integrale Finezza 7 A", capacity: dailyToHourlyCapacity(12), currentUsage: 0, fineness: 7 }
         ],
         departments: [
-            { id: 1001, name: "Reparto Tessitura Rettilinea", machineTypes: ["Rettilinea"], finenesses: ["3", "5", "7", "12", "14"], phaseIds: [2] }, // Tessitura
-            { id: 1002, name: "Reparto Tessitura Integrale", machineTypes: ["Integrale"], finenesses: ["7"], phaseIds: [2] }, // Tessitura
-            { id: 1003, name: "Reparto Preparazione", machineTypes: [], finenesses: [], phaseIds: [1] }, // Preparazione Filati
-            { id: 1004, name: "Reparto Rammaglio", machineTypes: [], finenesses: [], phaseIds: [3] }, // Rammaglio
-            { id: 1005, name: "Reparto Cucitura", machineTypes: ["Taglia e Cuci"], finenesses: [], phaseIds: [4] }, // Cucitura
-            { id: 1006, name: "Reparto Controllo Qualità", machineTypes: [], finenesses: [], phaseIds: [5] }, // Controllo Qualità
-            { id: 1007, name: "Reparto Rifinitura", machineTypes: [], finenesses: [], phaseIds: [6] }, // Rifinitura e Stiro
-            { id: 1008, name: "Reparto Confezionamento", machineTypes: [], finenesses: [], phaseIds: [7] } // Etichettatura e Confezionamento
+            { id: 1001, name: "Reparto Preparazione Filati", machineTypes: [], finenesses: [], phaseIds: [1] },
+            { id: 1002, name: "Reparto Tessitura Rettilinea", machineTypes: ["Rettilinea"], finenesses: ["3", "5", "7", "12", "14"], phaseIds: [2] },
+            { id: 1003, name: "Reparto Tessitura Integrale", machineTypes: ["Integrale"], finenesses: ["7"], phaseIds: [2] },
+            { id: 1004, name: "Reparto Rammaglio", machineTypes: [], finenesses: [], phaseIds: [3] },
+            { id: 1005, name: "Reparto Cucitura", machineTypes: [], finenesses: [], phaseIds: [4] },
+            { id: 1006, name: "Reparto Controllo Qualità", machineTypes: [], finenesses: [], phaseIds: [5] },
+            { id: 1007, name: "Reparto Rifinitura e Stiro", machineTypes: [], finenesses: [], phaseIds: [6] },
+            { id: 1008, name: "Reparto Etichettatura e Confezionamento", machineTypes: [], finenesses: [], phaseIds: [7] }
         ],
         rawMaterials: [
             { id: 201, name: "Filato di Cotone", unit: "kg", currentStock: 500 },
@@ -2426,8 +2426,13 @@ function proceedWithCalculation(article, quantity, startDate) {
             }
 
             // For simplicity, assign to the first suitable department's machines
+            // Filter machines by type and fineness if applicable
             const departmentMachines = appData.machines.filter(m =>
-                suitableDepartments.some(dept => dept.machineTypes.includes(m.name.split(' ')[0])) // Very basic matching
+                suitableDepartments.some(dept => {
+                    const machineTypeMatches = dept.machineTypes.includes(m.name.split(' ')[0]); // e.g., "Rettilinea" from "Rettilinea Finezza 3 A"
+                    const finenessMatches = !m.fineness || dept.finenesses.includes(String(m.fineness)); // Check fineness if machine has it
+                    return machineTypeMatches && finenessMatches;
+                })
             );
 
             if (departmentMachines.length === 0) {
@@ -2670,7 +2675,11 @@ function saveEditedPlanning() {
                     const suitableDepartments = appData.departments.filter(dept => dept.phaseIds.includes(phase.id));
                     if (suitableDepartments.length === 0) continue;
                     const departmentMachines = appData.machines.filter(m =>
-                        suitableDepartments.some(dept => dept.machineTypes.includes(m.name.split(' ')[0]))
+                        suitableDepartments.some(dept => {
+                            const machineTypeMatches = dept.machineTypes.includes(m.name.split(' ')[0]);
+                            const finenessMatches = !m.fineness || dept.finenesses.includes(String(m.fineness));
+                            return machineTypeMatches && finenessMatches;
+                        })
                     );
                     if (departmentMachines.length === 0) continue;
                     const machine = departmentMachines[0];
