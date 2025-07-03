@@ -446,13 +446,13 @@ function initializeSampleData() {
 
     appData = {
         phases: [
-            { id: 1, name: "Preparazione Filati", time: 5 },
-            { id: 2, name: "Tessitura", time: 60 },
-            { id: 3, name: "Rammaglio", time: 45 },
-            { id: 4, name: "Cucitura", time: 20 },
-            { id: 5, name: "Controllo Qualità", time: 10 },
-            { id: 6, name: "Rifinitura e Stiro", time: 15 },
-            { id: 7, name: "Etichettatura e Confezionamento", time: 5 }
+            { id: 1, name: "Preparazione Filati", time: 5, dailyCapacity: 1000 }, // Added dailyCapacity for manual/generic phases
+            { id: 2, name: "Tessitura", time: 60 }, // Machine-specific, capacity derived from machines
+            { id: 3, name: "Rammaglio", time: 45, dailyCapacity: 800 },
+            { id: 4, name: "Cucitura", time: 20, dailyCapacity: 1200 },
+            { id: 5, name: "Controllo Qualità", time: 10, dailyCapacity: 1500 },
+            { id: 6, name: "Rifinitura e Stiro", time: 15, dailyCapacity: 1000 },
+            { id: 7, name: "Etichettatura e Confezionamento", time: 5, dailyCapacity: 2000 }
         ],
         machines: [
             // Rettilinee
@@ -507,7 +507,7 @@ function initializeSampleData() {
                 client: "Client A",
                 cycle: [
                     { phaseId: 1, time: 5 }, // Preparazione Filati
-                    { phaseId: 2, time: 60 }, // Tessitura
+                    { phaseId: 2, time: 60, machineType: "Rettilinea", fineness: 7 }, // Tessitura - Specificato macchina e finezza
                     { phaseId: 4, time: 20 }, // Cucitura
                     { phaseId: 5, time: 10 }, // Controllo Qualità
                     { phaseId: 6, time: 15 }, // Rifinitura e Stiro
@@ -523,7 +523,7 @@ function initializeSampleData() {
                 client: "Client B",
                 cycle: [
                     { phaseId: 1, time: 7 }, // Preparazione Filati
-                    { phaseId: 2, time: 70 }, // Tessitura
+                    { phaseId: 2, time: 70, machineType: "Rettilinea", fineness: 12 }, // Tessitura - Specificato macchina e finezza
                     { phaseId: 3, time: 45 }, // Rammaglio
                     { phaseId: 4, time: 25 }, // Cucitura
                     { phaseId: 5, time: 12 }, // Controllo Qualità
@@ -540,7 +540,7 @@ function initializeSampleData() {
                 client: "Client C",
                 cycle: [
                     { phaseId: 1, time: 8 }, // Preparazione Filati
-                    { phaseId: 2, time: 90 }, // Tessitura (Integrale)
+                    { phaseId: 2, time: 90, machineType: "Integrale", fineness: 7 }, // Tessitura (Integrale) - Specificato macchina e finezza
                     { phaseId: 5, time: 15 }, // Controllo Qualità
                     { phaseId: 6, time: 20 }, // Rifinitura e Stiro
                     { phaseId: 7, time: 10 }  // Etichettatura e Confezionamento
@@ -561,12 +561,12 @@ function initializeSampleData() {
                 notes: "Urgent order",
                 dailyWorkload: {
                     [new Date().toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 101 }, // Preparazione Filati
-                        2: { quantity: 50, machine: 103 } // Tessitura
+                        1: { quantity: 50, machine: 101 }, // Preparazione Filati (esempio, non ha macchina specifica)
+                        2: { quantity: 50, machine: 105 } // Tessitura - Rettilinea Finezza 7 A
                     },
                     [addDays(new Date(), 1).toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 102 }, // Preparazione Filati
-                        2: { quantity: 50, machine: 104 } // Tessitura
+                        1: { quantity: 50, machine: 102 }, // Preparazione Filati (esempio)
+                        2: { quantity: 50, machine: 106 } // Tessitura - Rettilinea Finezza 7 B
                     }
                 }
             },
@@ -582,12 +582,12 @@ function initializeSampleData() {
                 notes: "New sample for client C",
                 dailyWorkload: {
                     [addDays(new Date(), 7).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 105 }, // Preparazione Filati
-                        2: { quantity: 25, machine: 108 } // Tessitura
+                        1: { quantity: 25, machine: 105 }, // Preparazione Filati (esempio)
+                        2: { quantity: 25, machine: 108 } // Tessitura - Rettilinea Finezza 12 A
                     },
                     [addDays(new Date(), 8).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 106 }, // Preparazione Filati
-                        2: { quantity: 25, machine: 109 } // Tessitura
+                        1: { quantity: 25, machine: 106 }, // Preparazione Filati (esempio)
+                        2: { quantity: 25, machine: 109 } // Tessitura - Rettilinea Finezza 12 B
                     }
                 }
             },
@@ -603,12 +603,12 @@ function initializeSampleData() {
                 notes: "First batch of integral sweaters",
                 dailyWorkload: {
                     [addDays(new Date(), 14).toISOString().slice(0, 10)]: {
-                        1: { quantity: 10, machine: 118 }, // Preparazione Filati, Integrale
-                        5: { quantity: 10, machine: 103 } // Controllo Qualità (example machine)
+                        1: { quantity: 10, machine: 118 }, // Preparazione Filati (esempio)
+                        2: { quantity: 10, machine: 118 } // Tessitura - Integrale Finezza 7 A
                     },
                     [addDays(new Date(), 15).toISOString().slice(0, 10)]: {
-                        1: { quantity: 10, machine: 118 }, // Preparazione Filati, Integrale
-                        5: { quantity: 10, machine: 104 } // Controllo Qualità (example machine)
+                        1: { quantity: 10, machine: 118 }, // Preparazione Filati (esempio)
+                        2: { quantity: 10, machine: 118 } // Tessitura - Integrale Finezza 7 A
                     }
                 }
             }
@@ -2062,8 +2062,16 @@ function saveArticle() {
         const timeInput = stepDiv.querySelector('.cycle-time-input');
         const phaseId = phaseSelect ? parseInt(phaseSelect.value) : null;
         const time = timeInput ? parseFloat(timeInput.value) : 0;
+        // Also capture machineType and fineness if available in the form (for future UI expansion)
+        // For now, these are hardcoded in sample data for simplicity but would come from UI inputs.
+        const machineType = phaseSelect ? appData.phases.find(p => p.id === phaseId)?.machineType : undefined; // Placeholder
+        const fineness = phaseSelect ? appData.phases.find(p => p.id === phaseId)?.fineness : undefined; // Placeholder
+
         if (phaseId && !isNaN(time) && time > 0) {
-            cycleSteps.push({ phaseId: phaseId, time: time });
+            const step = { phaseId: phaseId, time: time };
+            if (machineType) step.machineType = machineType;
+            if (fineness) step.fineness = fineness;
+            cycleSteps.push(step);
         }
     });
 
@@ -2203,7 +2211,11 @@ function updateArticlesTable() {
         // Display cycle steps
         const cycleText = article.cycle.map(step => {
             const phase = appData.phases.find(p => p.id === step.phaseId);
-            return phase ? `${phase.name} (${step.time}min)` : `Fase Sconosciuta (${step.time}min)`;
+            let phaseInfo = phase ? `${phase.name} (${step.time}min)` : `Fase Sconosciuta (${step.time}min)`;
+            if (step.machineType && step.fineness) {
+                phaseInfo += ` [${step.machineType} F${step.fineness}]`;
+            }
+            return phaseInfo;
         }).join('; ');
         row.insertCell().textContent = cycleText;
 
@@ -2334,7 +2346,7 @@ function calculateDelivery() {
 
         const articleId = parseInt(planningArticleSelect.value);
         const quantity = parseInt(planningQuantityInput.value);
-        const startDateStr = planningStartDateInput.value; // Keep this here for the prompt
+        const startDateStr = planningStartDateInput.value;
 
         if (!articleId || isNaN(quantity) || quantity <= 0 || !startDateStr) {
             showNotification('Per favore, compila tutti i campi obbligatori (Articolo, Quantità, Data Inizio Desiderata).', 'error');
@@ -2389,12 +2401,12 @@ function calculateDelivery() {
                         text: 'Procedi Comunque',
                         className: 'btn-warning',
                         isPrimary: true,
-                        onClick: () => proceedWithCalculation(article, quantity, startDate) // Pass startDate (Date object)
+                        onClick: () => proceedWithCalculation(article, quantity, startDate)
                     }
                 ]
             );
         } else {
-            proceedWithCalculation(article, quantity, startDate); // Pass startDate (Date object)
+            proceedWithCalculation(article, quantity, startDate);
         }
     } catch (error) {
         console.error("Errore nella funzione calculateDelivery:", error);
@@ -2430,31 +2442,33 @@ function proceedWithCalculation(article, quantity, startDate) {
             const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
             if (!phase) return; // Skip if phase not found
 
-            // Find machines suitable for this phase
-            const suitableMachines = appData.machines.filter(m => {
-                const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
-                if (!department) return false; // No department for this phase
+            let totalPhaseDailyCapacityPieces = 0;
 
-                // Ensure machineTypes and finenesses are arrays before calling .includes()
-                const departmentMachineTypes = department.machineTypes || [];
-                const departmentFinenesses = department.finenesses || [];
+            // If the cycle step specifies a machine type and fineness, use machine capacity
+            if (cycleStep.machineType && cycleStep.fineness) {
+                const requiredMachineType = cycleStep.machineType;
+                const requiredFineness = cycleStep.fineness;
 
-                // Check if machine type matches department's machine types
-                const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
-                // Check if fineness matches department's finenesses (if machine has fineness)
-                const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
-                return machineTypeMatches && finenessMatches;
-            });
+                const suitableMachines = appData.machines.filter(m => {
+                    // Check if machine type matches required type
+                    const machineTypeMatches = m.name.split(' ')[0] === requiredMachineType;
+                    // Check if fineness matches required fineness
+                    const finenessMatches = m.fineness === requiredFineness;
+                    return machineTypeMatches && finenessMatches;
+                });
 
-            let totalPhaseDailyCapacityPieces = 0; // Total pieces of *this article's phase* that can be done by all suitable machines today
-            suitableMachines.forEach(machine => {
-                // Pieces of this article's phase that can be done by this machine in an hour:
-                // This is the rate at which the machine processes its *own* type of work (machine.capacity, pieces/hour)
-                // vs. the rate at which it processes *this specific article's phase* (60 minutes / cycleStep.time minutes/piece).
-                // The effective rate is the minimum of these two.
-                const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity)); // Avoid division by zero
-                totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
-            });
+                suitableMachines.forEach(machine => {
+                    const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity));
+                    totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
+                });
+            } else if (phase.dailyCapacity !== undefined) {
+                // If phase has a defined dailyCapacity (for manual/generic phases)
+                totalPhaseDailyCapacityPieces = phase.dailyCapacity;
+            } else {
+                // Fallback: if no machine specified and no dailyCapacity, assume zero capacity
+                console.warn(`Fase "${phase.name}" (ID: ${phase.id}) nel ciclo dell'articolo non ha capacità definita (né macchina specifica né dailyCapacity). Considerata capacità zero.`);
+                totalPhaseDailyCapacityPieces = 0;
+            }
 
             // Update the bottleneck for the article's production today
             if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
@@ -2473,30 +2487,36 @@ function proceedWithCalculation(article, quantity, startDate) {
 
         if (piecesToProduceToday > 0) {
             // Distribute these pieces across phases for the daily workload record
-            // For simplicity, we record that 'piecesToProduceToday' pieces of the *article* are worked on in each phase.
-            // In a real system, you'd assign specific pieces to specific machines.
             article.cycle.forEach(cycleStep => {
                 const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
                 if (!phase) return;
 
-                const suitableMachines = appData.machines.filter(m => {
-                    const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
-                    if (!department) return false;
-                    const departmentMachineTypes = department.machineTypes || [];
-                    const departmentFinenesses = department.finenesses || [];
-                    const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
-                    const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
-                    return machineTypeMatches && finenessMatches;
-                });
-
-                if (suitableMachines.length > 0) {
-                    // Assign to the first suitable machine for simplicity in the workload record
-                    const machine = suitableMachines[0];
-                    dailyWorkload[dateKey][phase.id] = {
-                        quantity: piecesToProduceToday,
-                        machine: machine.id
-                    };
+                let assignedMachineId = null;
+                if (cycleStep.machineType && cycleStep.fineness) {
+                    // Try to assign to a suitable machine if specified
+                    const suitableMachines = appData.machines.filter(m =>
+                        m.name.split(' ')[0] === cycleStep.machineType && m.fineness === cycleStep.fineness
+                    );
+                    if (suitableMachines.length > 0) {
+                        assignedMachineId = suitableMachines[0].id; // Assign to the first suitable machine
+                    }
+                } else {
+                    // For non-machine specific phases, assign to a dummy ID or a generic machine if available
+                    // For now, we'll just use a placeholder or the first machine if it's a generic phase.
+                    // This part might need further refinement based on how "manual" phases are tracked.
+                    // For simplicity, if no specific machine is required, we can assign a generic machine ID or just the phase ID.
+                    // Let's assign to the first available machine if no specific type is required for workload tracking.
+                    if (appData.machines.length > 0) {
+                         assignedMachineId = appData.machines[0].id; // Arbitrary assignment for display
+                    } else {
+                         assignedMachineId = 0; // Placeholder for "no machine"
+                    }
                 }
+
+                dailyWorkload[dateKey][phase.id] = {
+                    quantity: piecesToProduceToday,
+                    machine: assignedMachineId // Store the assigned machine ID or placeholder
+                };
             });
             remainingQuantityToProduce -= piecesToProduceToday;
         }
@@ -2541,9 +2561,9 @@ function proceedWithCalculation(article, quantity, startDate) {
             for (const phaseId in dailyWorkload[date]) {
                 const phase = appData.phases.find(p => p.id === parseInt(phaseId));
                 const machine = appData.machines.find(m => m.id === dailyWorkload[date][phaseId].machine);
-                if (phase && machine) {
+                if (phase) {
                     const phaseLi = document.createElement('li');
-                    phaseLi.textContent = `${phase.name}: ${dailyWorkload[date][phaseId].quantity} pz su Macchina ${machine.name}`;
+                    phaseLi.textContent = `${phase.name}: ${dailyWorkload[date][phaseId].quantity} pz ${machine ? 'su Macchina ' + machine.name : '(Nessuna macchina specifica)'}`;
                     phaseUl.appendChild(phaseLi);
                 }
             }
@@ -2558,7 +2578,7 @@ function proceedWithCalculation(article, quantity, startDate) {
         quantity: quantity,
         type: document.getElementById('planningType').value,
         priority: document.getElementById('planningPriority').value,
-        startDate: startDate.toISOString().slice(0, 10), // Correctly use the startDate Date object
+        startDate: startDate.toISOString().slice(0, 10),
         estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
         status: "pending", // Always pending when calculated/saved
         notes: document.getElementById('planningNotes').value.trim(),
@@ -2710,11 +2730,11 @@ function saveEditedPlanning() {
         const newQuantity = parseInt(document.getElementById('editPlanningQuantity').value);
         const newType = document.getElementById('editPlanningType').value;
         const newPriority = document.getElementById('editPlanningPriority').value;
-        const newStartDate = document.getElementById('editPlanningStartDate').value;
+        const newStartDateStr = document.getElementById('editPlanningStartDate').value; // Get as string
         const newNotes = document.getElementById('editPlanningNotes').value.trim();
 
         // Basic validation
-        if (!newArticleId || isNaN(newQuantity) || newQuantity <= 0 || !newStartDate) {
+        if (!newArticleId || isNaN(newQuantity) || newQuantity <= 0 || !newStartDateStr) {
             showNotification('Per favor, compila tutti i campi obbligatori nel modulo di modifica.', 'error');
             return;
         }
@@ -2724,14 +2744,14 @@ function saveEditedPlanning() {
         lot.quantity = newQuantity;
         lot.type = newType;
         lot.priority = newPriority;
-        lot.startDate = newStartDate;
+        lot.startDate = newStartDateStr; // Store as string
         lot.notes = newNotes;
 
         // Re-calculate estimated delivery date and daily workload if article, quantity or start date changed
         const article = appData.articles.find(a => a.id === lot.articleId);
         if (article) {
             let remainingQuantityToProduce = lot.quantity;
-            let currentDate = new Date(lot.startDate);
+            let currentDate = new Date(lot.startDate); // Use the new start date
             let dailyWorkload = {};
             let estimatedDeliveryDate = null;
             const workingHoursPerDay = 8;
@@ -2749,21 +2769,28 @@ function saveEditedPlanning() {
                     const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
                     if (!phase) return;
 
-                    const suitableMachines = appData.machines.filter(m => {
-                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
-                        if (!department) return false;
-                        const departmentMachineTypes = department.machineTypes || [];
-                        const departmentFinenesses = department.finenesses || [];
-                        const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
-                        const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
-                        return machineTypeMatches && finenessMatches;
-                    });
-
                     let totalPhaseDailyCapacityPieces = 0;
-                    suitableMachines.forEach(machine => {
-                        const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity)); // Avoid division by zero
-                        totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
-                    });
+
+                    if (cycleStep.machineType && cycleStep.fineness) {
+                        const requiredMachineType = cycleStep.machineType;
+                        const requiredFineness = cycleStep.fineness;
+
+                        const suitableMachines = appData.machines.filter(m => {
+                            const machineTypeMatches = m.name.split(' ')[0] === requiredMachineType;
+                            const finenessMatches = m.fineness === requiredFineness;
+                            return machineTypeMatches && finenessMatches;
+                        });
+
+                        suitableMachines.forEach(machine => {
+                            const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity));
+                            totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
+                        });
+                    } else if (phase.dailyCapacity !== undefined) {
+                        totalPhaseDailyCapacityPieces = phase.dailyCapacity;
+                    } else {
+                        console.warn(`Fase "${phase.name}" (ID: ${phase.id}) nel ciclo dell'articolo non ha capacità definita (né macchina specifica né dailyCapacity). Considerata capacità zero.`);
+                        totalPhaseDailyCapacityPieces = 0;
+                    }
 
                     if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
                         minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
@@ -2771,7 +2798,7 @@ function saveEditedPlanning() {
                 });
 
                 if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
-                    estimatedDeliveryDate = currentDate; // Set current date as fallback
+                    estimatedDeliveryDate = currentDate;
                     break;
                 }
 
@@ -2782,23 +2809,26 @@ function saveEditedPlanning() {
                         const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
                         if (!phase) return;
 
-                        const suitableMachines = appData.machines.filter(m => {
-                            const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
-                            if (!department) return false;
-                            const departmentMachineTypes = department.machineTypes || [];
-                            const departmentFinenesses = department.finenesses || [];
-                            const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
-                            const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
-                            return machineTypeMatches && finenessMatches;
-                        });
-
-                        if (suitableMachines.length > 0) {
-                            const machine = suitableMachines[0];
-                            dailyWorkload[dateKey][phase.id] = {
-                                quantity: piecesToProduceToday,
-                                machine: machine.id
-                            };
+                        let assignedMachineId = null;
+                        if (cycleStep.machineType && cycleStep.fineness) {
+                            const suitableMachines = appData.machines.filter(m =>
+                                m.name.split(' ')[0] === cycleStep.machineType && m.fineness === cycleStep.fineness
+                            );
+                            if (suitableMachines.length > 0) {
+                                assignedMachineId = suitableMachines[0].id;
+                            }
+                        } else {
+                             if (appData.machines.length > 0) {
+                                 assignedMachineId = appData.machines[0].id;
+                            } else {
+                                 assignedMachineId = 0;
+                            }
                         }
+
+                        dailyWorkload[dateKey][phase.id] = {
+                            quantity: piecesToProduceToday,
+                            machine: assignedMachineId
+                        };
                     });
                     remainingQuantityToProduce -= piecesToProduceToday;
                 }
@@ -2808,16 +2838,15 @@ function saveEditedPlanning() {
                     break;
                 }
 
-                // Advance to the next working day
                 do {
                     currentDate = addDays(currentDate, 1);
-                } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
+                } while (currentDate.getDay() === 0 || currentDate.getDay() === 6);
 
                 iterationCount++;
             }
             if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
                 showNotification('Attenzione: Impossibile ricalcolare la pianificazione entro un periodo di tempo ragionevole. Controlla le capacità dei macchinari e i cicli degli articoli.', 'error', 8000);
-                lot.estimatedDeliveryDate = currentDate.toISOString().slice(0, 10); // Fallback
+                lot.estimatedDeliveryDate = currentDate.toISOString().slice(0, 10);
             } else {
                 lot.estimatedDeliveryDate = estimatedDeliveryDate ? estimatedDeliveryDate.toISOString().slice(0, 10) : lot.startDate;
             }
@@ -3029,6 +3058,7 @@ function updateDeliverySchedule() {
                     Priorità: ${lot.priority.charAt(0).toUpperCase() + lot.priority.slice(1)}<br>
                     Tipo: ${lot.type === 'production' ? 'Prod.' : 'Camp.'}
                 `;
+                taskDiv.onclick = () => openEditPlanningModal(lot.id); // Make tasks clickable
                 dayColumn.appendChild(taskDiv);
             });
         }
@@ -3080,7 +3110,10 @@ function updateDailyWorkloadCalendar() {
                     const phaseData = lot.dailyWorkload[dayKey][phaseId];
                     const phase = appData.phases.find(p => p.id === parseInt(phaseId));
                     if (phase) {
-                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
+                        // Find department that contains this phase.
+                        // Note: A phase might be in multiple departments in a complex setup,
+                        // but for simplicity, we'll pick the first department that includes this phase.
+                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id));
                         if (department) {
                             dailyWorkloadAggregated[department.id] = dailyWorkloadAggregated[department.id] || {};
                             dailyWorkloadAggregated[department.id][phase.id] = dailyWorkloadAggregated[department.id][phase.id] || { quantity: 0, machine: phaseData.machine };
@@ -3110,10 +3143,10 @@ function updateDailyWorkloadCalendar() {
                     for (const phaseId in dailyWorkloadAggregated[deptId]) {
                         const phase = appData.phases.find(p => p.id === parseInt(phaseId));
                         const machine = appData.machines.find(m => m.id === dailyWorkloadAggregated[deptId][phaseId].machine);
-                        if (phase && machine) {
+                        if (phase) {
                             const detailDiv = document.createElement('div');
                             detailDiv.className = 'daily-workload-detail';
-                            detailDiv.innerHTML = `${phase.name}: <strong>${dailyWorkloadAggregated[deptId][phaseId].quantity} pz</strong> su ${machine.name}`;
+                            detailDiv.innerHTML = `${phase.name}: <strong>${dailyWorkloadAggregated[deptId][phaseId].quantity} pz</strong> ${machine ? 'su ' + machine.name : '(Nessuna macchina specifica)'}`;
                             deptDiv.appendChild(detailDiv);
                         }
                     }
@@ -3193,9 +3226,13 @@ function updateDashboardStats() {
                 }
             });
 
-            const usagePercentage = machine.capacity > 0 ? (machineWorkload / machine.capacity) * 100 : 0;
+            // For a more accurate usage, we'd need to track allocated hours vs. available hours.
+            // For now, we'll just show a simplified "workload" relative to its capacity.
+            const totalMachineCapacityPerDay = machine.capacity * 8; // Assuming 8 hours/day
+            const usagePercentage = totalMachineCapacityPerDay > 0 ? (machineWorkload / totalMachineCapacityPerDay) * 100 : 0;
+
             machineStatsDiv.innerHTML += `
-                <p>${machine.name}: ${usagePercentage.toFixed(1)}% (${machineWorkload} / ${machine.capacity} pz)</p>
+                <p>${machine.name}: ${usagePercentage.toFixed(1)}% (Carico: ${machineWorkload} pz / Capacità giornaliera: ${totalMachineCapacityPerDay} pz)</p>
                 <div class="machine-usage">
                     <div class="machine-usage-bar" style="width: ${Math.min(100, usagePercentage)}%;"></div>
                 </div>
@@ -3764,4 +3801,3 @@ if (confirmActualConsumptionBtn) confirmActualConsumptionBtn.addEventListener('c
 // Event listener for the "Annulla" button in the actual consumption modal
 const cancelActualConsumptionBtn = document.getElementById('cancelActualConsumptionBtn');
 if (cancelActualConsumptionBtn) cancelActualConsumptionBtn.addEventListener('click', closeActualConsumptionModal);
-
