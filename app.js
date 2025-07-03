@@ -1276,10 +1276,10 @@ function updateDepartmentsTable() {
     appData.departments.forEach(dept => {
         const row = tableBody.insertRow();
         row.insertCell().textContent = dept.name;
-        row.insertCell().textContent = dept.machineTypes.join(', ');
-        row.insertCell().textContent = dept.finenesses.join(', ');
+        row.insertCell().textContent = (dept.machineTypes || []).join(', '); // Ensure it's an array
+        row.insertCell().textContent = (dept.finenesses || []).join(', '); // Ensure it's an array
         // Display phase names
-        const phaseNames = dept.phaseIds.map(id => {
+        const phaseNames = (dept.phaseIds || []).map(id => { // Ensure it's an array
             const phase = appData.phases.find(p => p.id === id);
             return phase ? phase.name : `ID:${id}`;
         }).join('; ');
@@ -2415,8 +2415,11 @@ function proceedWithCalculation(article, quantity, startDate) {
     let estimatedDeliveryDate = null;
     const workingHoursPerDay = 8; // Assuming 8 working hours per day
 
+    const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
+    let iterationCount = 0;
+
     // Loop day by day until all quantity is produced
-    while (remainingQuantityToProduce > 0) {
+    while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
         const dateKey = currentDate.toISOString().slice(0, 10);
         dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
 
@@ -2425,17 +2428,21 @@ function proceedWithCalculation(article, quantity, startDate) {
         // Calculate daily capacity for each phase of the article
         article.cycle.forEach(cycleStep => {
             const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-            if (!phase) return;
+            if (!phase) return; // Skip if phase not found
 
             // Find machines suitable for this phase
             const suitableMachines = appData.machines.filter(m => {
-                const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
-                if (!department) return false;
+                const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
+                if (!department) return false; // No department for this phase
+
+                // Ensure machineTypes and finenesses are arrays before calling .includes()
+                const departmentMachineTypes = department.machineTypes || [];
+                const departmentFinenesses = department.finenesses || [];
 
                 // Check if machine type matches department's machine types
-                const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
+                const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
                 // Check if fineness matches department's finenesses (if machine has fineness)
-                const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
                 return machineTypeMatches && finenessMatches;
             });
 
@@ -2445,7 +2452,7 @@ function proceedWithCalculation(article, quantity, startDate) {
                 // This is the rate at which the machine processes its *own* type of work (machine.capacity, pieces/hour)
                 // vs. the rate at which it processes *this specific article's phase* (60 minutes / cycleStep.time minutes/piece).
                 // The effective rate is the minimum of these two.
-                const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (60 / cycleStep.time));
+                const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity)); // Avoid division by zero
                 totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
             });
 
@@ -2455,9 +2462,9 @@ function proceedWithCalculation(article, quantity, startDate) {
             }
         });
 
-        // If no capacity found for any phase, break to avoid infinite loop
-        if (minDailyPiecesAcrossPhases === Infinity) {
-            showNotification('Attenzione: Nessuna capacità produttiva trovata per l\'articolo. La pianificazione potrebbe non essere accurata.', 'warning');
+        // If no capacity found for any phase, or capacity is zero, break to avoid infinite loop
+        if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
+            showNotification('Attenzione: Nessuna capacità produttiva sufficiente trovata per l\'articolo. La pianificazione potrebbe non essere accurata.', 'warning', 5000);
             estimatedDeliveryDate = currentDate; // Set current date as fallback
             break;
         }
@@ -2473,10 +2480,12 @@ function proceedWithCalculation(article, quantity, startDate) {
                 if (!phase) return;
 
                 const suitableMachines = appData.machines.filter(m => {
-                    const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                    const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
                     if (!department) return false;
-                    const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
-                    const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                    const departmentMachineTypes = department.machineTypes || [];
+                    const departmentFinenesses = department.finenesses || [];
+                    const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
+                    const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
                     return machineTypeMatches && finenessMatches;
                 });
 
@@ -2497,12 +2506,18 @@ function proceedWithCalculation(article, quantity, startDate) {
             break;
         }
 
-        currentDate = addDays(currentDate, 1); // Move to the next day
-        if (currentDate.getDay() === 0) currentDate = addDays(currentDate, 1); // Skip Sunday
-        if (currentDate.getDay() === 6) currentDate = addDays(currentDate, 2); // Skip Saturday and Sunday
+        // Advance to the next working day
+        do {
+            currentDate = addDays(currentDate, 1);
+        } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
+
+        iterationCount++;
     }
 
-    if (!estimatedDeliveryDate) {
+    if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
+        showNotification('Attenzione: Impossibile calcolare la pianificazione entro un periodo di tempo ragionevole. Controlla le capacità dei macchinari e i cicli degli articoli.', 'error', 8000);
+        estimatedDeliveryDate = currentDate; // Fallback to current date if max iterations reached
+    } else if (!estimatedDeliveryDate) {
         estimatedDeliveryDate = currentDate; // Fallback if loop finishes without exact match
     }
 
@@ -2721,7 +2736,10 @@ function saveEditedPlanning() {
             let estimatedDeliveryDate = null;
             const workingHoursPerDay = 8;
 
-            while (remainingQuantityToProduce > 0) {
+            const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
+            let iterationCount = 0;
+
+            while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
                 const dateKey = currentDate.toISOString().slice(0, 10);
                 dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
 
@@ -2732,16 +2750,18 @@ function saveEditedPlanning() {
                     if (!phase) return;
 
                     const suitableMachines = appData.machines.filter(m => {
-                        const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
                         if (!department) return false;
-                        const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
-                        const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                        const departmentMachineTypes = department.machineTypes || [];
+                        const departmentFinenesses = department.finenesses || [];
+                        const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
+                        const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
                         return machineTypeMatches && finenessMatches;
                     });
 
                     let totalPhaseDailyCapacityPieces = 0;
                     suitableMachines.forEach(machine => {
-                        const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (60 / cycleStep.time));
+                        const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity)); // Avoid division by zero
                         totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
                     });
 
@@ -2750,7 +2770,7 @@ function saveEditedPlanning() {
                     }
                 });
 
-                if (minDailyPiecesAcrossPhases === Infinity) {
+                if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
                     estimatedDeliveryDate = currentDate; // Set current date as fallback
                     break;
                 }
@@ -2763,10 +2783,12 @@ function saveEditedPlanning() {
                         if (!phase) return;
 
                         const suitableMachines = appData.machines.filter(m => {
-                            const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                            const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
                             if (!department) return false;
-                            const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
-                            const finenessMatches = department.finenesses.length === 0 || (m.fineness && department.finenesses.includes(String(m.fineness)));
+                            const departmentMachineTypes = department.machineTypes || [];
+                            const departmentFinenesses = department.finenesses || [];
+                            const machineTypeMatches = departmentMachineTypes.length === 0 || departmentMachineTypes.includes(m.name.split(' ')[0]);
+                            const finenessMatches = departmentFinenesses.length === 0 || (m.fineness && departmentFinenesses.includes(String(m.fineness)));
                             return machineTypeMatches && finenessMatches;
                         });
 
@@ -2786,11 +2808,19 @@ function saveEditedPlanning() {
                     break;
                 }
 
-                currentDate = addDays(currentDate, 1);
-                if (currentDate.getDay() === 0) currentDate = addDays(currentDate, 1);
-                if (currentDate.getDay() === 6) currentDate = addDays(currentDate, 2);
+                // Advance to the next working day
+                do {
+                    currentDate = addDays(currentDate, 1);
+                } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
+
+                iterationCount++;
             }
-            lot.estimatedDeliveryDate = estimatedDeliveryDate ? estimatedDeliveryDate.toISOString().slice(0, 10) : lot.startDate;
+            if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
+                showNotification('Attenzione: Impossibile ricalcolare la pianificazione entro un periodo di tempo ragionevole. Controlla le capacità dei macchinari e i cicli degli articoli.', 'error', 8000);
+                lot.estimatedDeliveryDate = currentDate.toISOString().slice(0, 10); // Fallback
+            } else {
+                lot.estimatedDeliveryDate = estimatedDeliveryDate ? estimatedDeliveryDate.toISOString().slice(0, 10) : lot.startDate;
+            }
             lot.dailyWorkload = dailyWorkload;
         }
 
@@ -3050,7 +3080,7 @@ function updateDailyWorkloadCalendar() {
                     const phaseData = lot.dailyWorkload[dayKey][phaseId];
                     const phase = appData.phases.find(p => p.id === parseInt(phaseId));
                     if (phase) {
-                        const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
+                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id)); // Ensure phaseIds is array
                         if (department) {
                             dailyWorkloadAggregated[department.id] = dailyWorkloadAggregated[department.id] || {};
                             dailyWorkloadAggregated[department.id][phase.id] = dailyWorkloadAggregated[department.id][phase.id] || { quantity: 0, machine: phaseData.machine };
