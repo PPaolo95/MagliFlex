@@ -1882,8 +1882,9 @@ function deleteJournalEntry(entryId) {
                         showNotification('Voce di magazzino non trovata.', 'error');
                     }
                 }
-            ]
-    );
+            }
+        ]
+    ); // <-- THIS WAS THE MISSING CLOSING PARENTHESIS AND SEMICOLON
 }
 
 // --- Funzioni per la Gestione degli Articoli (Articles) ---
