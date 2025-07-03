@@ -393,7 +393,7 @@ function loadAndInitializeAppData() {
     const storedData = localStorage.getItem('magliflexAppData');
     if (storedData) {
         appData = JSON.parse(storedData);
-        // Ensure all arrays exist even if empty in stored data
+        // Ensure all top-level arrays exist even if empty in stored data
         appData.phases = appData.phases || [];
         appData.machines = appData.machines || [];
         appData.departments = appData.departments || [];
@@ -403,6 +403,14 @@ function loadAndInitializeAppData() {
         appData.productionPlan = appData.productionPlan || [];
         appData.notifications = appData.notifications || [];
         appData.users = appData.users || [];
+        
+        // Ensure nested arrays within departments are also initialized
+        appData.departments.forEach(dept => {
+            dept.machineTypes = dept.machineTypes || [];
+            dept.finenesses = dept.finenesses || [];
+            dept.phaseIds = dept.phaseIds || [];
+        });
+
         // Ensure default dates are set if not present
         appData.currentDeliveryWeekStartDate = appData.currentDeliveryWeekStartDate ? new Date(appData.currentDeliveryWeekStartDate) : startOfWeek(new Date());
         appData.currentWorkloadWeekStartDate = appData.currentWorkloadWeekStartDate ? new Date(appData.currentWorkloadWeekStartDate) : startOfWeek(new Date());
@@ -1884,7 +1892,7 @@ function deleteJournalEntry(entryId) {
                 }
             }
         ]
-    ); // <-- THIS WAS THE MISSING CLOSING PARENTHESIS AND SEMICOLON
+    );
 }
 
 // --- Funzioni per la Gestione degli Articoli (Articles) ---
@@ -2422,7 +2430,7 @@ function proceedWithCalculation(article, quantity, startDate) {
             // Find machines suitable for this phase
             const suitableMachines = appData.machines.filter(m => {
                 const department = appData.departments.find(d => d.phaseIds.includes(phase.id));
-                if (!department) return false; // No department for this phase
+                if (!department) return false;
 
                 // Check if machine type matches department's machine types
                 const machineTypeMatches = department.machineTypes.length === 0 || department.machineTypes.includes(m.name.split(' ')[0]);
