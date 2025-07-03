@@ -443,6 +443,7 @@ function initializeSampleData() {
     console.log("Inizializzazione dati di esempio.");
     // Helper to calculate pieces per hour from pieces per day (assuming 8-hour workday)
     const dailyToHourlyCapacity = (piecesPerDay) => piecesPerDay / 8;
+    const today = new Date(); // Get today's date for dynamic sample data
 
     appData = {
         phases: [
@@ -494,9 +495,9 @@ function initializeSampleData() {
             { id: 205, name: "Cerniere", unit: "pz", currentStock: 500 }
         ],
         warehouseJournal: [
-            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 201, type: "load", quantity: 500, reference: "Fornitore X" },
-            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 202, type: "load", quantity: 1000, reference: "Fornitore Y" },
-            { id: generateId(), date: new Date().toISOString().slice(0, 10), materialId: 204, type: "load", quantity: 300, reference: "Fornitore Z" }
+            { id: generateId(), date: today.toISOString().slice(0, 10), materialId: 201, type: "load", quantity: 500, reference: "Fornitore X" },
+            { id: generateId(), date: today.toISOString().slice(0, 10), materialId: 202, type: "load", quantity: 1000, reference: "Fornitore Y" },
+            { id: generateId(), date: today.toISOString().slice(0, 10), materialId: 204, type: "load", quantity: 300, reference: "Fornitore Z" }
         ],
         articles: [
             {
@@ -555,20 +556,11 @@ function initializeSampleData() {
                 quantity: 100,
                 type: "production",
                 priority: "high",
-                startDate: new Date().toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(new Date(), 5).toISOString().slice(0, 10),
+                startDate: today.toISOString().slice(0, 10),
+                estimatedDeliveryDate: addDays(today, 5).toISOString().slice(0, 10),
                 status: "pending",
                 notes: "Urgent order",
-                dailyWorkload: {
-                    [new Date().toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 101 }, // Preparazione Filati (esempio, non ha macchina specifica)
-                        2: { quantity: 50, machine: 105 } // Tessitura - Rettilinea Finezza 7 A
-                    },
-                    [addDays(new Date(), 1).toISOString().slice(0, 10)]: {
-                        1: { quantity: 50, machine: 102 }, // Preparazione Filati (esempio)
-                        2: { quantity: 50, machine: 106 } // Tessitura - Rettilinea Finezza 7 B
-                    }
-                }
+                dailyWorkload: {} // Will be recalculated on load if needed
             },
             {
                 id: generateId(),
@@ -576,20 +568,11 @@ function initializeSampleData() {
                 quantity: 50,
                 type: "sample",
                 priority: "medium",
-                startDate: addDays(new Date(), 7).toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(new Date(), 10).toISOString().slice(0, 10),
+                startDate: addDays(today, 7).toISOString().slice(0, 10),
+                estimatedDeliveryDate: addDays(today, 10).toISOString().slice(0, 10),
                 status: "pending",
                 notes: "New sample for client C",
-                dailyWorkload: {
-                    [addDays(new Date(), 7).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 105 }, // Preparazione Filati (esempio)
-                        2: { quantity: 25, machine: 108 } // Tessitura - Rettilinea Finezza 12 A
-                    },
-                    [addDays(new Date(), 8).toISOString().slice(0, 10)]: {
-                        1: { quantity: 25, machine: 106 }, // Preparazione Filati (esempio)
-                        2: { quantity: 25, machine: 109 } // Tessitura - Rettilinea Finezza 12 B
-                    }
-                }
+                dailyWorkload: {} // Will be recalculated on load if needed
             },
             {
                 id: generateId(),
@@ -597,33 +580,24 @@ function initializeSampleData() {
                 quantity: 20,
                 type: "production",
                 priority: "low",
-                startDate: addDays(new Date(), 14).toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(new Date(), 18).toISOString().slice(0, 10),
+                startDate: addDays(today, 14).toISOString().slice(0, 10),
+                estimatedDeliveryDate: addDays(today, 18).toISOString().slice(0, 10),
                 status: "pending",
                 notes: "First batch of integral sweaters",
-                dailyWorkload: {
-                    [addDays(new Date(), 14).toISOString().slice(0, 10)]: {
-                        1: { quantity: 10, machine: 118 }, // Preparazione Filati (esempio)
-                        2: { quantity: 10, machine: 118 } // Tessitura - Integrale Finezza 7 A
-                    },
-                    [addDays(new Date(), 15).toISOString().slice(0, 10)]: {
-                        1: { quantity: 10, machine: 118 }, // Preparazione Filati (esempio)
-                        2: { quantity: 10, machine: 118 } // Tessitura - Integrale Finezza 7 A
-                    }
-                }
+                dailyWorkload: {} // Will be recalculated on load if needed
             }
         ],
         notifications: [
-            { id: generateId(), message: "Benvenuto in MagliFlex! Esplora le funzionalità.", date: new Date().toISOString(), type: "info", read: false },
-            { id: generateId(), message: "Scorta minima per Filato di Cotone raggiunta. Ordina subito!", date: new Date().toISOString(), type: "warning", read: false }
+            { id: generateId(), message: "Benvenuto in MagliFlex! Esplora le funzionalità.", date: today.toISOString(), type: "info", read: false },
+            { id: generateId(), message: "Scorta minima per Filato di Cotone raggiunta. Ordina subito!", date: today.toISOString(), type: "warning", read: false }
         ],
         users: [
             { id: 1, username: "admin", password: "admin", roles: ["admin", "planning", "warehouse"], forcePasswordChange: false },
             { id: 2, username: "planner", password: "planner", roles: ["planning"], forcePasswordChange: false },
             { id: 3, username: "warehouse", password: "warehouse", roles: ["warehouse"], forcePasswordChange: false }
         ],
-        currentDeliveryWeekStartDate: startOfWeek(new Date()),
-        currentWorkloadWeekStartDate: startOfWeek(new Date())
+        currentDeliveryWeekStartDate: startOfWeek(today),
+        currentWorkloadWeekStartDate: startOfWeek(today)
     };
     saveData();
     console.log("Dati di esempio caricati e salvati.");
@@ -2062,10 +2036,24 @@ function saveArticle() {
         const timeInput = stepDiv.querySelector('.cycle-time-input');
         const phaseId = phaseSelect ? parseInt(phaseSelect.value) : null;
         const time = timeInput ? parseFloat(timeInput.value) : 0;
-        // Also capture machineType and fineness if available in the form (for future UI expansion)
-        // For now, these are hardcoded in sample data for simplicity but would come from UI inputs.
-        const machineType = phaseSelect ? appData.phases.find(p => p.id === phaseId)?.machineType : undefined; // Placeholder
-        const fineness = phaseSelect ? appData.phases.find(p => p.id === phaseId)?.fineness : undefined; // Placeholder
+        
+        // For now, machineType and fineness are hardcoded in sample data.
+        // In a real UI, these would be inputs in the cycle step form.
+        // We'll retrieve them from the original phase definition if they exist,
+        // or from the article's cycle if editing an existing article.
+        let machineType, fineness;
+        if (currentEditingId.articles) {
+            const existingArticle = appData.articles.find(a => a.id === currentEditingId.articles);
+            const existingStep = existingArticle?.cycle.find(s => s.phaseId === phaseId);
+            machineType = existingStep?.machineType;
+            fineness = existingStep?.fineness;
+        } else {
+            // For new articles, these would typically be selected in the UI.
+            // For simplicity, we'll assume they are not set via UI when creating new,
+            // and rely on sample data for now.
+            // If the phase itself has these properties (e.g., if a phase is tied to a machine type),
+            // we could retrieve them here. For now, they are on the article's cycle step.
+        }
 
         if (phaseId && !isNaN(time) && time > 0) {
             const step = { phaseId: phaseId, time: time };
@@ -2480,7 +2468,7 @@ function proceedWithCalculation(article, quantity, startDate) {
         if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
             showNotification('Attenzione: Nessuna capacità produttiva sufficiente trovata per l\'articolo. La pianificazione potrebbe non essere accurata.', 'warning', 5000);
             estimatedDeliveryDate = currentDate; // Set current date as fallback
-            break;
+            break; // Break the loop if no capacity
         }
 
         const piecesToProduceToday = Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases);
@@ -2502,10 +2490,6 @@ function proceedWithCalculation(article, quantity, startDate) {
                     }
                 } else {
                     // For non-machine specific phases, assign to a dummy ID or a generic machine if available
-                    // For now, we'll just use a placeholder or the first machine if it's a generic phase.
-                    // This part might need further refinement based on how "manual" phases are tracked.
-                    // For simplicity, if no specific machine is required, we can assign a generic machine ID or just the phase ID.
-                    // Let's assign to the first available machine if no specific type is required for workload tracking.
                     if (appData.machines.length > 0) {
                          assignedMachineId = appData.machines[0].id; // Arbitrary assignment for display
                     } else {
