@@ -1864,8 +1864,7 @@ function deleteJournalEntry(entryId) {
                         showNotification('Voce di magazzino non trovata.', 'error');
                     }
                 }
-            }
-        ]
+            ]
     );
 }
 
@@ -2471,7 +2470,7 @@ function proceedWithCalculation(article, quantity, startDate) {
             break; // Break the loop if no capacity
         }
 
-        const piecesToProduceToday = Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases);
+        const piecesToProduceToday = Math.floor(Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases)); // Round down to integer
 
         if (piecesToProduceToday > 0) {
             // Distribute these pieces across phases for the daily workload record
@@ -2547,7 +2546,8 @@ function proceedWithCalculation(article, quantity, startDate) {
                 const machine = appData.machines.find(m => m.id === dailyWorkload[date][phaseId].machine);
                 if (phase) {
                     const phaseLi = document.createElement('li');
-                    phaseLi.textContent = `${phase.name}: ${dailyWorkload[date][phaseId].quantity} pz ${machine ? 'su Macchina ' + machine.name : '(Nessuna macchina specifica)'}`;
+                    // Display quantity as integer
+                    phaseLi.textContent = `${phase.name}: ${Math.floor(dailyWorkload[date][phaseId].quantity)} pz ${machine ? 'su Macchina ' + machine.name : '(Nessuna macchina specifica)'}`;
                     phaseUl.appendChild(phaseLi);
                 }
             }
@@ -2786,7 +2786,7 @@ function saveEditedPlanning() {
                     break;
                 }
 
-                const piecesToProduceToday = Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases);
+                const piecesToProduceToday = Math.floor(Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases)); // Round down to integer
 
                 if (piecesToProduceToday > 0) {
                     article.cycle.forEach(cycleStep => {
@@ -3130,7 +3130,8 @@ function updateDailyWorkloadCalendar() {
                         if (phase) {
                             const detailDiv = document.createElement('div');
                             detailDiv.className = 'daily-workload-detail';
-                            detailDiv.innerHTML = `${phase.name}: <strong>${dailyWorkloadAggregated[deptId][phaseId].quantity} pz</strong> ${machine ? 'su ' + machine.name : '(Nessuna macchina specifica)'}`;
+                            // Display quantity as integer
+                            detailDiv.innerHTML = `${phase.name}: <strong>${Math.floor(dailyWorkloadAggregated[deptId][phaseId].quantity)} pz</strong> ${machine ? 'su ' + machine.name : '(Nessuna macchina specifica)'}`;
                             deptDiv.appendChild(detailDiv);
                         }
                     }
@@ -3216,7 +3217,7 @@ function updateDashboardStats() {
             const usagePercentage = totalMachineCapacityPerDay > 0 ? (machineWorkload / totalMachineCapacityPerDay) * 100 : 0;
 
             machineStatsDiv.innerHTML += `
-                <p>${machine.name}: ${usagePercentage.toFixed(1)}% (Carico: ${machineWorkload} pz / Capacità giornaliera: ${totalMachineCapacityPerDay} pz)</p>
+                <p>${machine.name}: ${usagePercentage.toFixed(1)}% (Carico: ${Math.floor(machineWorkload)} pz / Capacità giornaliera: ${totalMachineCapacityPerDay} pz)</p>
                 <div class="machine-usage">
                     <div class="machine-usage-bar" style="width: ${Math.min(100, usagePercentage)}%;"></div>
                 </div>
