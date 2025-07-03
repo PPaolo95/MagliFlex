@@ -2334,7 +2334,7 @@ function calculateDelivery() {
 
         const articleId = parseInt(planningArticleSelect.value);
         const quantity = parseInt(planningQuantityInput.value);
-        const startDateStr = planningStartDateInput.value;
+        const startDateStr = planningStartDateInput.value; // Keep this here for the prompt
 
         if (!articleId || isNaN(quantity) || quantity <= 0 || !startDateStr) {
             showNotification('Per favore, compila tutti i campi obbligatori (Articolo, Quantità, Data Inizio Desiderata).', 'error');
@@ -2389,12 +2389,12 @@ function calculateDelivery() {
                         text: 'Procedi Comunque',
                         className: 'btn-warning',
                         isPrimary: true,
-                        onClick: () => proceedWithCalculation(article, quantity, startDate)
+                        onClick: () => proceedWithCalculation(article, quantity, startDate) // Pass startDate (Date object)
                     }
                 ]
             );
         } else {
-            proceedWithCalculation(article, quantity, startDate);
+            proceedWithCalculation(article, quantity, startDate); // Pass startDate (Date object)
         }
     } catch (error) {
         console.error("Errore nella funzione calculateDelivery:", error);
@@ -2406,7 +2406,7 @@ function calculateDelivery() {
  * Proceeds with the delivery date calculation after material check.
  * @param {Object} article The article object.
  * @param {number} quantity The quantity to produce.
- * @param {Date} startDate The desired start date.
+ * @param {Date} startDate The desired start date (Date object).
  */
 function proceedWithCalculation(article, quantity, startDate) {
     let remainingQuantityToProduce = quantity;
@@ -2558,7 +2558,7 @@ function proceedWithCalculation(article, quantity, startDate) {
         quantity: quantity,
         type: document.getElementById('planningType').value,
         priority: document.getElementById('planningPriority').value,
-        startDate: startDateStr,
+        startDate: startDate.toISOString().slice(0, 10), // Correctly use the startDate Date object
         estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
         status: "pending", // Always pending when calculated/saved
         notes: document.getElementById('planningNotes').value.trim(),
@@ -3764,3 +3764,4 @@ if (confirmActualConsumptionBtn) confirmActualConsumptionBtn.addEventListener('c
 // Event listener for the "Annulla" button in the actual consumption modal
 const cancelActualConsumptionBtn = document.getElementById('cancelActualConsumptionBtn');
 if (cancelActualConsumptionBtn) cancelActualConsumptionBtn.addEventListener('click', closeActualConsumptionModal);
+
