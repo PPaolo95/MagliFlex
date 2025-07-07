@@ -22,8 +22,8 @@
                 <label for="passwordInput">Password:</label>
                 <input type="password" id="passwordInput" placeholder="Inserisci la tua password" aria-label="Password" tabindex="0">
             </div>
-            <button class="btn btn-primary login-button" id="loginButton" aria-label="Login" tabindex="0">Login</button>
-            <p class="login-info">Inserisci un nome utente qualsiasi per accedere. Esempio: admin/admin, planner/planner, warehouse/warehouse.</p>
+            <button class="btn btn-primary login-button" id="loginButton" onclick="loginUser()" aria-label="Login" tabindex="0">Login</button>
+            <p class="login-info">Inserisci un nome utente qualsiasi per accedere.</p>
         </div>
     </div>
 
@@ -34,222 +34,254 @@
                 <span class="hamburger-icon"></span>
                 <span class="hamburger-icon"></span>
             </button>
-            <div class="app-title">MagliFlex</div>
+            <h1 class="app-title">MagliFlex</h1>
             <div class="top-bar-actions">
-                <button class="btn btn-icon theme-toggle-btn" onclick="toggleTheme()" aria-label="Cambia tema (chiaro/scuro)" title="Cambia tema">
-                    <i class="fas fa-sun"></i>
+                <button class="btn-icon" aria-label="Attiva/Disattiva tema scuro" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
                 </button>
-                <button class="btn btn-icon" onclick="openNotificationsModal()" aria-label="Apri notifiche" title="Notifiche">
+                <button class="btn-icon" aria-label="Mostra notifiche" onclick="openNotificationsModal()">
                     <i class="fas fa-bell"></i>
-                    <span id="notificationBadge" class="notification-badge">0</span>
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                 </button>
-                <button class="btn btn-icon" onclick="logoutUser()" aria-label="Logout" title="Logout">
+                <button class="btn-icon" aria-label="Logout" onclick="logoutUser()">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Menu di Navigazione Laterale -->
-        <nav class="nav-menu" id="mainNavMenu">
-            <button class="btn nav-btn" data-page-id="dashboard" aria-label="Vai alla Dashboard" tabindex="0"><i class="fas fa-home"></i> Dashboard</button>
-            <button class="btn nav-btn" data-page-id="schedule" aria-label="Vai alla Pianificazione e Calendario" tabindex="0"><i class="fas fa-calendar-alt"></i> Pianificazione & Calendario</button>
-            <button class="btn nav-btn" data-page-id="planning" aria-label="Vai alla Creazione Lotti di Produzione" tabindex="0"><i class="fas fa-industry"></i> Lotti Produzione</button>
-            <button class="btn nav-btn" data-page-id="articles" aria-label="Vai alla Gestione Articoli" tabindex="0"><i class="fas fa-tshirt"></i> Articoli</button>
-            <button class="btn nav-btn" data-page-id="rawMaterials" aria-label="Vai alla Gestione Materie Prime" tabindex="0"><i class="fas fa-boxes"></i> Materie Prime</button>
-            <button class="btn nav-btn" data-page-id="phases" aria-label="Vai alla Gestione Fasi di Lavorazione" tabindex="0"><i class="fas fa-cogs"></i> Fasi</button>
-            <button class="btn nav-btn" data-page-id="machines" aria-label="Vai alla Gestione Macchinari" tabindex="0"><i class="fas fa-robot"></i> Macchinari</button>
-            <button class="btn nav-btn" data-page-id="departments" aria-label="Vai alla Gestione Reparti" tabindex="0"><i class="fas fa-building"></i> Reparti</button>
-            <button class="btn nav-btn" data-page-id="holidays" aria-label="Vai alla Gestione Giorni Rossi" tabindex="0"><i class="fas fa-calendar-times"></i> Giorni Rossi</button>
-            <button class="btn nav-btn" data-page-id="users" aria-label="Vai alla Gestione Utenti" tabindex="0"><i class="fas fa-users-cog"></i> Gestione Utenti</button>
+        <!-- Menu di Navigazione -->
+        <nav class="nav-menu" id="navMenu">
+            <button class="nav-btn active" data-page="dashboardPage" onclick="showPage('dashboardPage')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="nav-btn" data-page="planningCalendarPage" onclick="showPage('planningCalendarPage')">
+                <i class="fas fa-calendar-alt"></i> Pianificazione & Calendario
+            </button>
+            <button class="nav-btn" data-page="productionLotsPage" onclick="showPage('productionLotsPage')">
+                <i class="fas fa-boxes"></i> Lotti Produzione
+            </button>
+            <button class="nav-btn" data-page="articlesPage" onclick="showPage('articlesPage')">
+                <i class="fas fa-tshirt"></i> Articoli
+            </button>
+            <button class="nav-btn" data-page="rawMaterialsPage" onclick="showPage('rawMaterialsPage')">
+                <i class="fas fa-warehouse"></i> Materie Prime
+            </button>
+            <button class="nav-btn" data-page="phasesPage" onclick="showPage('phasesPage')">
+                <i class="fas fa-cogs"></i> Fasi
+            </button>
+            <button class="nav-btn" data-page="machinesPage" onclick="showPage('machinesPage')">
+                <i class="fas fa-industry"></i> Macchinari
+            </button>
+            <button class="nav-btn" data-page="departmentsPage" onclick="showPage('departmentsPage')">
+                <i class="fas fa-building"></i> Reparti
+            </button>
+            <button class="nav-btn" data-page="holidaysPage" onclick="showPage('holidaysPage')">
+                <i class="fas fa-sun"></i> Giorni Rossi
+            </button>
+            <button class="nav-btn" data-page="userManagementPage" onclick="showPage('userManagementPage')">
+                <i class="fas fa-users-cog"></i> Gestione Utenti
+            </button>
+
             <div class="nav-menu-footer">
-                <button class="btn btn-icon" onclick="exportDataAsJson()" aria-label="Esporta dati" title="Esporta Dati">
-                    <i class="fas fa-download"></i> Esporta Dati
-                </button>
-                <label for="importDataFile" class="btn btn-icon" aria-label="Importa dati" title="Importa Dati">
-                    <i class="fas fa-upload"></i> Importa Dati
-                    <input type="file" id="importDataFile" accept=".json" style="display: none;">
-                </label>
+                <p>Utente: <span id="currentUsernameDisplay"></span></p>
+                <p>Ruolo: <span id="currentUserRoleDisplay"></span></p>
             </div>
         </nav>
 
-        <!-- Contenuto Principale -->
-        <main class="content">
+        <!-- Backdrop per il menu mobile (aggiunto qui) -->
+        <div class="menu-backdrop" onclick="toggleNavMenu()"></div>
+
+        <!-- Contenuto Principale dell'Applicazione -->
+        <main class="content" id="appMainContent">
             <!-- Dashboard Page -->
-            <section id="dashboard" class="page active">
-                <h2>Dashboard</h2>
-                <div class="dashboard-grid">
-                    <div class="card" id="generalStats">
-                        <h3>Statistiche Generali</h3>
-                        <p>Caricamento...</p>
-                    </div>
-                    <div class="card" id="rawMaterialStockSummary">
-                        <h3>Riepilogo Scorte Materie Prime</h3>
-                        <p>Caricamento...</p>
-                    </div>
-                    <div class="card" id="machineStats">
-                        <h3>Utilizzo Macchinari</h3>
-                        <p>Caricamento...</p>
-                    </div>
-                    <div class="card" id="upcomingDeliveries">
-                        <h3>Consegne Imminenti</h3>
-                        <p>Caricamento...</p>
-                    </div>
-                    <div class="card" id="workloadChart">
-                        <h3>Carico di Lavoro Settimanale</h3>
-                        <p>Caricamento...</p>
+            <section id="dashboardPage" class="page active">
+                <div class="card">
+                    <h2>Riepilogo Generale</h2>
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3>Dati Registrati</h3>
+                            <p>Articoli Registrati: <strong><span id="dashboardArticlesCount">0</span></strong></p>
+                            <p>Fasi di Lavorazione: <strong><span id="dashboardPhasesCount">0</span></strong></p>
+                            <p>Macchinari Registrati: <strong><span id="dashboardMachinesCount">0</span></strong></p>
+                            <p>Lotti di Produzione Pendenti: <strong><span id="dashboardPendingLotsCount">0</span></strong></p>
+                            <p>Lotti di Campionatura Pendenti: <strong><span id="dashboardPendingSamplesCount">0</span></strong></p>
+                            <p>Materie Prime Registrate: <strong><span id="dashboardRawMaterialsCount">0</span></strong></p>
+                        </div>
+                        <div class="card">
+                            <h3>Riepilogo Scorte Materie Prime</h3>
+                            <ul id="dashboardRawMaterialsSummary">
+                                <p style="text-align: center; color: #888;">Nessuna materia prima registrata.</p>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3>Utilizzo Macchinari</h3>
+                            <div id="dashboardMachineUsage">
+                                <p style="text-align: center; color: #888;">Nessun macchinario registrato o dati di utilizzo.</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Workload Reparti (Settimana Corrente)</h3>
+                            <div id="dashboardDepartmentWorkload">
+                                <p style="text-align: center; color: #888;">Nessun dato di workload per la settimana corrente.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Schedule Page -->
-            <section id="schedule" class="page">
-                <h2>Pianificazione & Calendario</h2>
-
+            <!-- Planning & Calendar Page -->
+            <section id="planningCalendarPage" class="page">
                 <div class="card">
-                    <h3>Calendario Consegne</h3>
-                    <div class="calendar-nav">
-                        <button class="btn btn-secondary" onclick="navigateDeliveryWeek(-7)" aria-label="Settimana Precedente"><i class="fas fa-chevron-left"></i> Prec. Settimana</button>
-                        <span id="currentDeliveryWeekRange"></span>
-                        <button class="btn btn-secondary" onclick="navigateDeliveryWeek(7)" aria-label="Settimana Successiva">Succ. Settimana <i class="fas fa-chevron-right"></i></button>
-                    </div>
-                    <div class="calendar-grid" id="deliverySchedule">
-                        <!-- Delivery schedule will be populated here by JS -->
+                    <h2>Pianificazione Produzione</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="planningArticleSelect">Articolo:</label>
+                            <select id="planningArticleSelect" aria-label="Seleziona Articolo per Pianificazione">
+                                <option value="">Seleziona un articolo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="planningQuantityInput">Quantità:</label>
+                            <input type="number" id="planningQuantityInput" placeholder="Inserisci quantità" min="1" aria-label="Quantità da Pianificare">
+                        </div>
+                        <div class="form-group">
+                            <label for="planningPrioritySelect">Priorità:</label>
+                            <select id="planningPrioritySelect" aria-label="Seleziona Priorità">
+                                <option value="low">Bassa</option>
+                                <option value="medium">Media</option>
+                                <option value="high">Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="planningTypeSelect">Tipo Lotto:</label>
+                            <select id="planningTypeSelect" aria-label="Seleziona Tipo Lotto">
+                                <option value="production">Produzione</option>
+                                <option value="sample">Campionatura</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="planningDeliveryDateInput">Data di Consegna Desiderata:</label>
+                            <input type="date" id="planningDeliveryDateInput" aria-label="Data di Consegna Desiderata">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="calculatePlanning()">Calcola Pianificazione</button>
+                            <button class="btn btn-success" id="savePlanningBtn" style="display: none;" onclick="saveCalculatedPlanning()">Salva Pianificazione</button>
+                            <button class="btn btn-danger" id="cancelPlanningBtn" style="display: none;" onclick="resetPlanningForm()">Annulla</button>
+                        </div>
+                        <div id="planningResult" class="result-box" style="display: none;">
+                            <h4>Risultato Pianificazione:</h4>
+                            <p><strong>Data di Inizio Suggerita:</strong> <span id="suggestedStartDate"></span></p>
+                            <p><strong>Data di Fine Suggerita:</strong> <span id="suggestedEndDate"></span></p>
+                            <p><strong>Giorni Lavorativi Totali:</strong> <span id="totalWorkingDays"></span></p>
+                            <p><strong>Workload per Reparto:</strong></p>
+                            <ul id="workloadDetails"></ul>
+                            <p><strong>Materie Prime Necessarie:</strong></p>
+                            <ul id="materialsNeeded"></ul>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3>Calendario Carico di Lavoro Giornaliero</h3>
+                    <h2>Calendario Produzione</h2>
                     <div class="calendar-nav">
-                        <button class="btn btn-secondary" onclick="navigateWorkloadWeek(-7)" aria-label="Settimana Precedente"><i class="fas fa-chevron-left"></i> Prec. Settimana</button>
-                        <span id="currentWorkloadWeekRange"></span>
-                        <button class="btn btn-secondary" onclick="navigateWorkloadWeek(7)" aria-label="Settimana Successiva">Succ. Settimana <i class="fas fa-chevron-right"></i></button>
+                        <button class="btn btn-secondary" onclick="prevWeek('delivery')"><i class="fas fa-chevron-left"></i> Settimana Prec.</button>
+                        <span id="currentDeliveryWeekDisplay"></span>
+                        <button class="btn btn-secondary" onclick="nextWeek('delivery')">Settimana Succ. <i class="fas fa-chevron-right"></i></button>
                     </div>
-                    <div class="calendar-grid" id="dailyWorkloadCalendar">
-                        <!-- Daily workload will be populated here by JS -->
+                    <div id="deliveryCalendarGrid" class="calendar-grid">
+                        <!-- Days will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3>Lotti di Pianificazione Dettagliati</h3>
-                    <div id="planningList" class="data-list">
-                        <!-- Detailed planning list will be populated here by JS -->
+                    <h2>Workload Settimanale Reparti</h2>
+                    <div class="calendar-nav">
+                        <button class="btn btn-secondary" onclick="prevWeek('workload')"><i class="fas fa-chevron-left"></i> Settimana Prec.</button>
+                        <span id="currentWorkloadWeekDisplay"></span>
+                        <button class="btn btn-secondary" onclick="nextWeek('workload')">Settimana Succ. <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="workloadCalendarGrid" class="calendar-grid">
+                        <!-- Workload days will be populated by JavaScript -->
                     </div>
                 </div>
             </section>
 
-            <!-- Planning Page -->
-            <section id="planning" class="page">
-                <h2>Crea/Modifica Lotto di Produzione</h2>
-                <div class="form-section card">
-                    <div class="form-group">
-                        <label for="planningArticle">Articolo:</label>
-                        <select id="planningArticle" aria-label="Seleziona Articolo">
-                            <option value="">Seleziona un articolo...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="planningQuantity">Quantità (pz):</label>
-                        <input type="number" id="planningQuantity" min="1" placeholder="Quantità" aria-label="Quantità">
-                    </div>
-                    <div class="form-group">
-                        <label for="planningStartDate">Data Inizio Desiderata:</label>
-                        <input type="date" id="planningStartDate" aria-label="Data Inizio Desiderata">
-                    </div>
-                    <div class="form-group">
-                        <label for="planningType">Tipo di Lotto:</label>
-                        <select id="planningType" aria-label="Tipo di Lotto">
-                            <option value="production">Produzione</option>
-                            <option value="sample">Campionatura</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="planningPriority">Priorità:</label>
-                        <select id="planningPriority" aria-label="Priorità">
-                            <option value="low">Bassa</option>
-                            <option value="medium">Media</option>
-                            <option value="high">Alta</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="planningNotes">Note:</label>
-                        <textarea id="planningNotes" placeholder="Note aggiuntive" aria-label="Note aggiuntive"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" onclick="calculateDelivery()" aria-label="Calcola Consegna Stimata"><i class="fas fa-calculator"></i> Calcola Consegna</button>
-                    </div>
-                    <div id="deliveryResult" class="result-box">
-                        <p style="text-align: center; color: var(--text-color);">Seleziona un articolo, quantità e data per calcolare la data di consegna stimata.</p>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="savePlanningBtn" style="display: none;" onclick="savePlanning()" aria-label="Salva Pianificazione"><i class="fas fa-save"></i> Salva Pianificazione</button>
-                        <button class="btn btn-danger" id="cancelPlanningBtn" style="display: none;" onclick="resetPlanningForm()" aria-label="Annulla Pianificazione"><i class="fas fa-times"></i> Annulla</button>
+            <!-- Production Lots Page -->
+            <section id="productionLotsPage" class="page">
+                <div class="card">
+                    <h2>Gestione Lotti di Produzione</h2>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Lotto</th>
+                                    <th>Articolo</th>
+                                    <th>Quantità</th>
+                                    <th>Priorità</th>
+                                    <th>Tipo</th>
+                                    <th>Data Inizio</th>
+                                    <th>Data Fine</th>
+                                    <th>Stato</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productionLotsTableBody">
+                                <tr><td colspan="9" style="text-align: center;">Nessun lotto di produzione registrato.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
 
             <!-- Articles Page -->
-            <section id="articles" class="page">
-                <h2>Gestione Articoli</h2>
-                <div class="form-section card">
-                    <h3>Dettagli Articolo</h3>
-                    <div class="form-group">
-                        <label for="articleId">Modifica Articolo Esistente:</label>
-                        <select id="articleId" onchange="loadArticleForEdit()" aria-label="Seleziona Articolo da modificare">
-                            <option value="new">-- Nuovo Articolo --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="articleCode">Codice Articolo:</label>
-                        <input type="text" id="articleCode" placeholder="Es. ART-001" aria-label="Codice Articolo">
-                    </div>
-                    <div class="form-group">
-                        <label for="articleDescription">Descrizione:</label>
-                        <input type="text" id="articleDescription" placeholder="Es. Maglietta Basic Cotone" aria-label="Descrizione Articolo">
-                    </div>
-                    <div class="form-group">
-                        <label for="articleColor">Colore:</label>
-                        <input type="text" id="articleColor" placeholder="Es. Bianco" aria-label="Colore Articolo">
-                    </div>
-                    <div class="form-group">
-                        <label for="articleClient">Cliente:</label>
-                        <input type="text" id="articleClient" placeholder="Es. Cliente A" aria-label="Cliente Articolo">
-                    </div>
-
-                    <h3>Ciclo di Lavorazione</h3>
-                    <div id="cycleSteps" class="dynamic-list-container">
-                        <!-- Cycle steps will be added here by JS -->
-                    </div>
-                    <button class="btn btn-secondary btn-sm" onclick="addCycleStep()" aria-label="Aggiungi Fase al Ciclo"><i class="fas fa-plus"></i> Aggiungi Fase</button>
-
-                    <h3>Distinta Base (BOM)</h3>
-                    <div id="bomItems" class="dynamic-list-container">
-                        <!-- BOM items will be added here by JS -->
-                    </div>
-                    <button class="btn btn-secondary btn-sm" onclick="addBomItem()" aria-label="Aggiungi Materia Prima alla Distinta Base"><i class="fas fa-plus"></i> Aggiungi Materia Prima</button>
-
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveArticleBtn" onclick="saveArticle()" aria-label="Salva Articolo"><i class="fas fa-plus-circle"></i> Aggiungi Articolo</button>
-                        <button class="btn btn-danger" id="cancelArticleBtn" style="display: none;" onclick="resetArticleForm()" aria-label="Annulla Modifiche Articolo"><i class="fas fa-times"></i> Annulla</button>
+            <section id="articlesPage" class="page">
+                <div class="card">
+                    <h2>Aggiungi/Modifica Articolo</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="articleNameInput">Nome Articolo:</label>
+                            <input type="text" id="articleNameInput" placeholder="Inserisci nome articolo" aria-label="Nome Articolo">
+                        </div>
+                        <div class="form-group">
+                            <label for="articleDescriptionInput">Descrizione:</label>
+                            <textarea id="articleDescriptionInput" placeholder="Descrizione dell'articolo" aria-label="Descrizione Articolo"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Ciclo di Lavorazione:</label>
+                            <div id="cycleStepsContainer" class="dynamic-list-container">
+                                <!-- Cycle steps will be added here by JS -->
+                                <p style="text-align: center; color: #888;">Aggiungi fasi al ciclo di lavorazione.</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="addCycleStep()">Aggiungi Fase</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Distinta Base (BOM):</label>
+                            <div id="bomItemsContainer" class="dynamic-list-container">
+                                <!-- BOM items will be added here by JS -->
+                                <p style="text-align: center; color: #888;">Aggiungi materie prime alla distinta base.</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="addBomItem()">Aggiungi Materia Prima</button>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveArticle()">Salva Articolo</button>
+                            <button class="btn btn-danger" id="cancelEditArticleBtn" style="display: none;" onclick="cancelEdit('articles')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Articoli</h3>
+                <div class="card">
+                    <h2>Articoli Registrati</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Codice</th>
+                                    <th>Nome</th>
                                     <th>Descrizione</th>
-                                    <th>Colore</th>
-                                    <th>Cliente</th>
-                                    <th>Ciclo</th>
-                                    <th>BOM</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="articlesTable">
-                                <!-- Articles will be populated here by JS -->
+                            <tbody id="articlesTableBody">
+                                <tr><td colspan="3" style="text-align: center;">Nessun articolo registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -257,78 +289,84 @@
             </section>
 
             <!-- Raw Materials Page -->
-            <section id="rawMaterials" class="page">
-                <h2>Gestione Materie Prime e Magazzino</h2>
-                <div class="form-section card">
-                    <h3>Carico Materie Prime / Aggiorna Scorta</h3>
-                    <div class="form-group">
-                        <label for="rawMaterialSelect">Materia Prima Esistente:</label>
-                        <select id="rawMaterialSelect" onchange="toggleNewRawMaterialInput()" aria-label="Seleziona Materia Prima">
-                            <option value="new">-- Aggiungi Nuova Materia Prima --</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="newRawMaterialNameGroup">
-                        <label for="newRawMaterialName">Nome Nuova Materia Prima:</label>
-                        <input type="text" id="newRawMaterialName" placeholder="Es. Filato di Cotone" aria-label="Nome Nuova Materia Prima">
-                    </div>
-                    <div class="form-group">
-                        <label for="rawMaterialUnit">Unità di Misura:</label>
-                        <input type="text" id="rawMaterialUnit" placeholder="Es. kg, pz, m" aria-label="Unità di Misura">
-                    </div>
-                    <div class="form-group">
-                        <label for="rawMaterialQuantity">Quantità (Carico):</label>
-                        <input type="number" id="rawMaterialQuantity" min="0.01" step="0.01" value="0" aria-label="Quantità Carico">
-                    </div>
-                    <div class="form-group">
-                        <label for="rawMaterialLoadDate">Data Carico:</label>
-                        <input type="date" id="rawMaterialLoadDate" aria-label="Data Carico">
-                    </div>
-                    <div class="form-group">
-                        <label for="rawMaterialBarcode">Riferimento / Barcode:</label>
-                        <input type="text" id="rawMaterialBarcode" placeholder="Es. Fornitore X, BARCODE123" onchange="handleBarcodeInput(event)" aria-label="Riferimento o Barcode">
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveRawMaterialBtn" onclick="addRawMaterialOrStock()" aria-label="Aggiungi o Carica Scorta"><i class="fas fa-plus-circle"></i> Aggiungi/Carica Scorta</button>
-                        <button class="btn btn-danger" id="cancelRawMaterialBtn" style="display: none;" onclick="resetRawMaterialForm()" aria-label="Annulla Modifiche Materia Prima"><i class="fas fa-times"></i> Annulla</button>
+            <section id="rawMaterialsPage" class="page">
+                <div class="card">
+                    <h2>Aggiungi Nuova Materia Prima</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="rawMaterialNameInput">Nome Materia Prima:</label>
+                            <input type="text" id="rawMaterialNameInput" placeholder="Es. Filato di Cotone" aria-label="Nome Materia Prima">
+                        </div>
+                        <div class="form-group">
+                            <label for="rawMaterialUnitInput">Unità di Misura:</label>
+                            <input type="text" id="rawMaterialUnitInput" placeholder="Es. kg, pz, mt" aria-label="Unità di Misura">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveRawMaterial()">Salva Materia Prima</button>
+                            <button class="btn btn-danger" id="cancelEditRawMaterialBtn" style="display: none;" onclick="cancelEdit('rawMaterials')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Scorte Materie Prime</h3>
-                    <div class="table-responsive">
+                <div class="card">
+                    <h2>Gestione Scorte Materie Prime</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="stockRawMaterialSelect">Materia Prima:</label>
+                            <select id="stockRawMaterialSelect" aria-label="Seleziona Materia Prima per Gestione Scorte">
+                                <option value="">Seleziona materia prima</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="stockQuantityInput">Quantità:</label>
+                            <input type="number" id="stockQuantityInput" placeholder="Quantità" min="0" aria-label="Quantità di Materia Prima">
+                        </div>
+                        <div class="form-group">
+                            <label for="stockTypeSelect">Tipo Movimento:</label>
+                            <select id="stockTypeSelect" aria-label="Tipo di Movimento">
+                                <option value="entry">Entrata</option>
+                                <option value="exit">Uscita</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-success" onclick="addStockMovement()">Registra Movimento</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="margin-top: 1.5rem;">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Nome</th>
-                                    <th>Scorta Attuale</th>
+                                    <th>Materia Prima</th>
+                                    <th>Quantità</th>
                                     <th>Unità</th>
+                                    <th>Data Ultimo Movimento</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="rawMaterialsStockTable">
-                                <!-- Raw materials stock will be populated here by JS -->
+                            <tbody id="rawMaterialsStockTableBody">
+                                <tr><td colspan="5" style="text-align: center;">Nessuna materia prima in stock.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Giornale di Magazzino</h3>
+                <div class="card">
+                    <h2>Storico Movimenti Magazzino</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Data</th>
                                     <th>Materia Prima</th>
                                     <th>Tipo</th>
                                     <th>Quantità</th>
-                                    <th>Stato</th>
-                                    <th>Riferimento</th>
+                                    <th>Note</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="warehouseJournalTable">
-                                <!-- Warehouse journal will be populated here by JS -->
+                            <tbody id="warehouseJournalTableBody">
+                                <tr><td colspan="7" style="text-align: center;">Nessun movimento registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -336,37 +374,45 @@
             </section>
 
             <!-- Phases Page -->
-            <section id="phases" class="page">
-                <h2>Gestione Fasi di Lavorazione</h2>
-                <div class="form-section card">
-                    <h3>Dettagli Fase</h3>
-                    <div class="form-group">
-                        <label for="phaseName">Nome Fase:</label>
-                        <input type="text" id="phaseName" placeholder="Es. Tessitura, Cucitura" aria-label="Nome Fase">
-                    </div>
-                    <div class="form-group">
-                        <label for="phaseTime">Tempo di Lavorazione (min/pz):</label>
-                        <input type="number" id="phaseTime" min="0.1" step="0.1" placeholder="Tempo in minuti per pezzo" aria-label="Tempo di Lavorazione">
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="savePhaseBtn" onclick="addPhase()" aria-label="Salva Fase"><i class="fas fa-plus-circle"></i> Aggiungi Fase</button>
-                        <button class="btn btn-danger" id="cancelPhaseBtn" style="display: none;" onclick="resetPhaseForm()" aria-label="Annulla Modifiche Fase"><i class="fas fa-times"></i> Annulla</button>
+            <section id="phasesPage" class="page">
+                <div class="card">
+                    <h2>Aggiungi/Modifica Fase di Lavorazione</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="phaseNameInput">Nome Fase:</label>
+                            <input type="text" id="phaseNameInput" placeholder="Es. Tessitura, Tintura" aria-label="Nome Fase">
+                        </div>
+                        <div class="form-group">
+                            <label for="phaseDepartmentSelect">Reparto:</label>
+                            <select id="phaseDepartmentSelect" aria-label="Seleziona Reparto per la Fase">
+                                <option value="">Seleziona un reparto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phaseDurationInput">Durata (ore per unità):</label>
+                            <input type="number" id="phaseDurationInput" placeholder="Es. 0.5" min="0" step="0.1" aria-label="Durata in ore per unità">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="savePhase()">Salva Fase</button>
+                            <button class="btn btn-danger" id="cancelEditPhaseBtn" style="display: none;" onclick="cancelEdit('phases')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Fasi</h3>
+                <div class="card">
+                    <h2>Fasi di Lavorazione Registrate</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Tempo (min/pz)</th>
+                                    <th>Reparto</th>
+                                    <th>Durata (ore/unità)</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="phasesTable">
-                                <!-- Phases will be populated here by JS -->
+                            <tbody id="phasesTableBody">
+                                <tr><td colspan="4" style="text-align: center;">Nessuna fase registrata.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -374,38 +420,45 @@
             </section>
 
             <!-- Machines Page -->
-            <section id="machines" class="page">
-                <h2>Gestione Macchinari</h2>
-                <div class="form-section card">
-                    <h3>Dettagli Macchinario</h3>
-                    <div class="form-group">
-                        <label for="machineName">Nome Macchinario:</label>
-                        <input type="text" id="machineName" placeholder="Es. Rettilinea A, Integrale B" aria-label="Nome Macchinario">
-                    </div>
-                    <div class="form-group">
-                        <label for="machineCapacity">Capacità (pz/ora):</label>
-                        <input type="number" id="machineCapacity" min="1" placeholder="Pezzi per ora" aria-label="Capacità Macchinario">
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveMachineBtn" onclick="addMachine()" aria-label="Salva Macchinario"><i class="fas fa-plus-circle"></i> Aggiungi Macchinario</button>
-                        <button class="btn btn-danger" id="cancelMachineBtn" style="display: none;" onclick="resetMachineForm()" aria-label="Annulla Modifiche Macchinario"><i class="fas fa-times"></i> Annulla</button>
+            <section id="machinesPage" class="page">
+                <div class="card">
+                    <h2>Aggiungi/Modifica Macchinario</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="machineNameInput">Nome Macchinario:</label>
+                            <input type="text" id="machineNameInput" placeholder="Es. Rettilinea 1A" aria-label="Nome Macchinario">
+                        </div>
+                        <div class="form-group">
+                            <label for="machineDepartmentSelect">Reparto:</label>
+                            <select id="machineDepartmentSelect" aria-label="Seleziona Reparto per il Macchinario">
+                                <option value="">Seleziona un reparto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="machineCapacityInput">Capacità Oraria (unità/ora):</label>
+                            <input type="number" id="machineCapacityInput" placeholder="Es. 10" min="0" aria-label="Capacità Oraria">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveMachine()">Salva Macchinario</button>
+                            <button class="btn btn-danger" id="cancelEditMachineBtn" style="display: none;" onclick="cancelEdit('machines')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Macchinari</h3>
+                <div class="card">
+                    <h2>Macchinari Registrati</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Capacità (pz/ora)</th>
-                                    <th>Utilizzo Attuale</th>
+                                    <th>Reparto</th>
+                                    <th>Capacità Oraria</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="machinesTable">
-                                <!-- Machines will be populated here by JS -->
+                            <tbody id="machinesTableBody">
+                                <tr><td colspan="4" style="text-align: center;">Nessun macchinario registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -413,82 +466,65 @@
             </section>
 
             <!-- Departments Page -->
-            <section id="departments" class="page">
-                <h2>Gestione Reparti</h2>
-                <div class="form-section card">
-                    <h3>Dettagli Reparto</h3>
-                    <div class="form-group">
-                        <label for="departmentId">Modifica Reparto Esistente:</label>
-                        <select id="departmentId" onchange="loadDepartmentForEdit()" aria-label="Seleziona Reparto da modificare">
-                            <option value="new">-- Nuovo Reparto --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="departmentName">Nome Reparto:</label>
-                        <input type="text" id="departmentName" placeholder="Es. Reparto Tessitura" aria-label="Nome Reparto">
-                    </div>
-                    <div class="form-group">
-                        <label for="departmentMachineTypes">Tipi Macchinari (separati da virgola):</label>
-                        <input type="text" id="departmentMachineTypes" placeholder="Es. Rettilinea, Integrale" aria-label="Tipi Macchinari">
-                    </div>
-                    <div class="form-group">
-                        <label for="departmentFinenesses">Finezza (separati da virgola):</label>
-                        <input type="text" id="departmentFinenesses" placeholder="Es. 3, 5, 7, 12, 14" aria-label="Finezza Macchinari">
-                    </div>
-                    <div class="form-group">
-                        <label for="departmentPhaseIds">Fasi Associate (seleziona multipli):</label>
-                        <select id="departmentPhaseIds" multiple size="5" aria-label="Fasi Associate">
-                            <!-- Phases will be populated here by JS -->
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveDepartmentBtn" onclick="saveDepartment()" aria-label="Salva Reparto"><i class="fas fa-plus-circle"></i> Aggiungi Reparto</button>
-                        <button class="btn btn-danger" id="cancelDepartmentBtn" style="display: none;" onclick="resetDepartmentForm()" aria-label="Annulla Modifiche Reparto"><i class="fas fa-times"></i> Annulla</button>
+            <section id="departmentsPage" class="page">
+                <div class="card">
+                    <h2>Aggiungi/Modifica Reparto</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="departmentNameInput">Nome Reparto:</label>
+                            <input type="text" id="departmentNameInput" placeholder="Es. Maglieria, Confezione" aria-label="Nome Reparto">
+                        </div>
+                        <div class="form-group">
+                            <label for="departmentDescriptionInput">Descrizione:</label>
+                            <textarea id="departmentDescriptionInput" placeholder="Descrizione del reparto" aria-label="Descrizione Reparto"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveDepartment()">Salva Reparto</button>
+                            <button class="btn btn-danger" id="cancelEditDepartmentBtn" style="display: none;" onclick="cancelEdit('departments')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Reparti</h3>
+                <div class="card">
+                    <h2>Reparti Registrati</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Tipi Macchinari</th>
-                                    <th>Finezza</th>
-                                    <th>Fasi Associate</th>
+                                    <th>Descrizione</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
-                            <tbody id="departmentsTable">
-                                <!-- Departments will be populated here by JS -->
+                            <tbody id="departmentsTableBody">
+                                <tr><td colspan="3" style="text-align: center;">Nessun reparto registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- Holidays Page (New Section) -->
-            <section id="holidays" class="page">
-                <h2>Gestione Giorni Rossi (Festività/Ferie)</h2>
-                <div class="form-section card">
-                    <h3>Aggiungi/Modifica Giorno Rosso</h3>
-                    <div class="form-group">
-                        <label for="holidayDate">Data:</label>
-                        <input type="date" id="holidayDate" aria-label="Data Giorno Rosso">
-                    </div>
-                    <div class="form-group">
-                        <label for="holidayDescription">Descrizione:</label>
-                        <input type="text" id="holidayDescription" placeholder="Es. Natale, Ferragosto, Ferie Aziendali" aria-label="Descrizione Giorno Rosso">
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveHolidayBtn" onclick="addHoliday()" aria-label="Salva Giorno Rosso"><i class="fas fa-plus-circle"></i> Aggiungi Giorno Rosso</button>
-                        <button class="btn btn-danger" id="cancelHolidayBtn" style="display: none;" onclick="resetHolidayForm()" aria-label="Annulla Modifiche Giorno Rosso"><i class="fas fa-times"></i> Annulla</button>
+            <!-- Holidays Page -->
+            <section id="holidaysPage" class="page">
+                <div class="card">
+                    <h2>Gestione Giorni Rossi</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="holidayDateInput">Data Giorno Rosso:</label>
+                            <input type="date" id="holidayDateInput" aria-label="Data Giorno Rosso">
+                        </div>
+                        <div class="form-group">
+                            <label for="holidayDescriptionInput">Descrizione:</label>
+                            <input type="text" id="holidayDescriptionInput" placeholder="Es. Natale, Ferragosto" aria-label="Descrizione Giorno Rosso">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="addHoliday()">Aggiungi Giorno Rosso</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Giorni Rossi</h3>
+                <div class="card">
+                    <h2>Giorni Rossi Registrati</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
@@ -499,7 +535,7 @@
                                 </tr>
                             </thead>
                             <tbody id="holidaysTableBody">
-                                <!-- Holidays will be populated here by JS -->
+                                <tr><td colspan="3" style="text-align: center;">Nessun giorno rosso registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -507,50 +543,49 @@
             </section>
 
             <!-- User Management Page -->
-            <section id="users" class="page">
-                <h2>Gestione Utenti</h2>
-                <div class="form-section card">
-                    <h3>Dettagli Utente</h3>
-                    <div class="form-group">
-                        <label for="usernameInputForm">Nome Utente:</label>
-                        <input type="text" id="usernameInputForm" placeholder="Nome utente" aria-label="Nome Utente">
-                    </div>
-                    <div class="form-group">
-                        <label for="passwordInputForm">Password (lascia vuoto per non cambiare):</label>
-                        <input type="password" id="passwordInputForm" placeholder="Password" aria-label="Password">
-                    </div>
-                    <div class="form-group">
-                        <label>Ruoli:</label>
-                        <div id="userRolesCheckboxes" class="checkbox-group">
-                            <label><input type="checkbox" value="admin"> Amministratore</label>
-                            <label><input type="checkbox" value="planning"> Pianificazione</label>
-                            <label><input type="checkbox" value="warehouse"> Magazzino</label>
+            <section id="userManagementPage" class="page">
+                <div class="card">
+                    <h2>Gestione Utenti</h2>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="usernameInputForm">Nome Utente:</label>
+                            <input type="text" id="usernameInputForm" placeholder="Inserisci nome utente" aria-label="Nome Utente">
                         </div>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <label><input type="checkbox" id="forcePasswordChangeCheckbox"> Forza cambio password al prossimo accesso</label>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-success" id="saveUserBtn" onclick="saveUser()" aria-label="Salva Utente"><i class="fas fa-plus-circle"></i> Aggiungi Utente</button>
-                        <button class="btn btn-danger" id="cancelUserBtn" style="display: none;" onclick="resetUserForm()" aria-label="Annulla Modifiche Utente"><i class="fas fa-times"></i> Annulla</button>
+                        <div class="form-group">
+                            <label for="passwordInputForm">Password:</label>
+                            <input type="password" id="passwordInputForm" placeholder="Lascia vuoto per non cambiare" aria-label="Password Utente">
+                            <small style="color: var(--text-color-light);">Lascia vuoto per non cambiare la password in modifica.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRoles">Ruoli:</label>
+                            <div id="userRoles" class="checkbox-group">
+                                <label><input type="checkbox" name="role" value="admin"> Amministratore</label>
+                                <label><input type="checkbox" name="role" value="planner"> Pianificatore</label>
+                                <label><input type="checkbox" name="role" value="production"> Produzione</label>
+                                <label><input type="checkbox" name="role" value="warehouse"> Magazzino</label>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveUser()">Salva Utente</button>
+                            <button class="btn btn-danger" id="cancelEditUserBtn" style="display: none;" onclick="cancelEdit('users')">Annulla</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-section card">
-                    <h3>Elenco Utenti</h3>
+                <div class="card">
+                    <h2>Utenti Registrati</h2>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Nome Utente</th>
-                                    <th>Password</th>
                                     <th>Ruoli</th>
                                     <th>Forza Cambio Password</th>
                                     <th>Azioni</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
-                                <!-- Users will be populated here by JS -->
+                                <tr><td colspan="4" style="text-align: center;">Nessun utente registrato.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -559,46 +594,58 @@
         </main>
     </div>
 
-    <!-- Modal per Modifica Lotto di Pianificazione -->
-    <div id="editPlanningModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-planning-modal-title">
+    <!-- Modale per la conferma di consumo materie prime -->
+    <div id="confirmConsumptionModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-consumption-title">
         <div class="modal-content">
-            <h3 id="edit-planning-modal-title">Modifica Lotto di Pianificazione</h3>
-            <input type="hidden" id="editPlanningLotId">
-            <div class="form-group">
-                <label for="editPlanningArticle">Articolo:</label>
-                <select id="editPlanningArticle" aria-label="Seleziona Articolo per modifica">
-                    <!-- Populated by JS -->
-                </select>
+            <h3 id="confirm-consumption-title">Conferma Consumo Materie Prime</h3>
+            <p>Sei sicuro di voler registrare il consumo di materie prime per il lotto di produzione <strong id="consumptionLotIdDisplay"></strong>?</p>
+            <div id="materialsToConsumeList">
+                <!-- Materie prime da consumare verranno popolate qui -->
             </div>
             <div class="form-group">
-                <label for="editPlanningQuantity">Quantità (pz):</label>
-                <input type="number" id="editPlanningQuantity" min="1" aria-label="Quantità per modifica">
+                <label for="consumptionNotes">Note (opzionale):</label>
+                <textarea id="consumptionNotes" placeholder="Aggiungi note sul consumo" aria-label="Note sul consumo"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="confirmConsumption()">Conferma</button>
+                <button class="btn btn-danger" onclick="closeConfirmConsumptionModal()">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per la modifica del lotto di pianificazione -->
+    <div id="editPlanningLotModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-planning-title">
+        <div class="modal-content">
+            <h3 id="edit-planning-title">Modifica Lotto di Pianificazione</h3>
+            <div class="form-group">
+                <label for="editPlanningArticleSelect">Articolo:</label>
+                <select id="editPlanningArticleSelect" aria-label="Seleziona Articolo per Modifica Pianificazione"></select>
             </div>
             <div class="form-group">
-                <label for="editPlanningType">Tipo di Lotto:</label>
-                <select id="editPlanningType" aria-label="Tipo di Lotto per modifica">
-                    <option value="production">Produzione</option>
-                    <option value="sample">Campionatura</option>
-                </select>
+                <label for="editPlanningQuantityInput">Quantità:</label>
+                <input type="number" id="editPlanningQuantityInput" min="1" aria-label="Quantità Lotto">
             </div>
             <div class="form-group">
-                <label for="editPlanningPriority">Priorità:</label>
-                <select id="editPlanningPriority" aria-label="Priorità per modifica">
+                <label for="editPlanningPrioritySelect">Priorità:</label>
+                <select id="editPlanningPrioritySelect" aria-label="Priorità Lotto">
                     <option value="low">Bassa</option>
                     <option value="medium">Media</option>
                     <option value="high">Alta</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="editPlanningStartDate">Data Inizio Desiderata:</label>
-                <input type="date" id="editPlanningStartDate" aria-label="Data Inizio per modifica">
+                <label for="editPlanningTypeSelect">Tipo Lotto:</label>
+                <select id="editPlanningTypeSelect" aria-label="Tipo Lotto">
+                    <option value="production">Produzione</option>
+                    <option value="sample">Campionatura</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="editPlanningNotes">Note:</label>
-                <textarea id="editPlanningNotes" aria-label="Note per modifica"></textarea>
+                <label for="editPlanningDeliveryDateInput">Data di Consegna Desiderata:</label>
+                <input type="date" id="editPlanningDeliveryDateInput" aria-label="Data di Consegna">
             </div>
             <div class="modal-buttons">
-                <button class="btn btn-success" id="saveEditedPlanningBtn" aria-label="Salva modifiche al lotto di pianificazione" tabindex="0">Salva Modifiche</button>
+                <button class="btn btn-primary" onclick="saveEditedPlanningLot()" aria-label="Salva modifiche al lotto di pianificazione" tabindex="0">Salva Modifiche</button>
                 <button class="btn btn-danger" id="cancelEditPlanningBtn" aria-label="Annulla modifiche al lotto di pianificazione" tabindex="0">Annulla</button>
             </div>
         </div>
@@ -620,58 +667,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal per Cambio Password Forzato -->
-    <div id="changePasswordModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="change-password-modal-title">
-        <div class="modal-content">
-            <h3 id="change-password-modal-title">Cambia Password</h3>
-            <p>La tua password temporanea è stata impostata. Per favore, cambiala ora.</p>
-            <div class="form-group">
-                <label for="oldPasswordChange">Vecchia Password:</label>
-                <input type="password" id="oldPasswordChange" aria-label="Vecchia Password" tabindex="0">
-            </div>
-            <div class="form-group">
-                <label for="newPasswordChange">Nuova Password:</label>
-                <input type="password" id="newPasswordChange" aria-label="Nuova Password" tabindex="0">
-            </div>
-            <div class="form-group">
-                <label for="confirmNewPasswordChange">Conferma Nuova Password:</label>
-                <input type="password" id="confirmNewPasswordChange" aria-label="Conferma Nuova Password" tabindex="0">
-            </div>
-            <div class="modal-buttons">
-                <button class="btn btn-success" id="confirmChangePasswordBtn" aria-label="Conferma cambio password" tabindex="0">Cambia Password</button>
-                <button class="btn btn-danger" onclick="closeChangePasswordModal()" aria-label="Annulla cambio password" tabindex="0">Annulla</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal per Registrazione Consumo Effettivo -->
-    <div id="actualConsumptionModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="actual-consumption-modal-title">
-        <div class="modal-content">
-            <h3 id="actual-consumption-modal-title">Registra Consumo Effettivo</h3>
-            <p id="modalRmInfo">Caricamento informazioni materia prima...</p>
-            <div class="form-group">
-                <label for="actualConsumedQuantity">Quantità Effettivamente Consumata:</label>
-                <input type="number" id="actualConsumedQuantity" min="0.01" step="0.01" aria-label="Quantità Effettivamente Consumata" tabindex="0">
-            </div>
-            <div class="modal-buttons">
-                <button class="btn btn-success" id="confirmActualConsumptionBtn" aria-label="Conferma consumo effettivo" tabindex="0">Conferma Consumo</button>
-                <button class="btn btn-danger" id="cancelActualConsumptionBtn" aria-label="Annulla consumo effettivo" tabindex="0">Annulla</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Custom Message Box Modal -->
-    <div id="messageBoxModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="message-box-title">
-        <div class="modal-content">
-            <h3 id="message-box-title"></h3>
-            <p id="message-box-text"></p>
-            <div class="modal-buttons" id="message-box-buttons">
-                <!-- Buttons will be populated by JS -->
-            </div>
-        </div>
-    </div>
-
 
     <!-- Contenitore per le notifiche Toast -->
     <div id="notificationContainer"></div>
