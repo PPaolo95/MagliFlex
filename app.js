@@ -1864,7 +1864,8 @@ function deleteJournalEntry(entryId) {
                         showNotification('Voce di magazzino non trovata.', 'error');
                     }
                 }
-            ]
+            }
+        ]
     );
 }
 
