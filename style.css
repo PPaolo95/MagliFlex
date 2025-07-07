@@ -221,6 +221,7 @@ body {
 .top-bar-actions {
     display: flex;
     gap: 0.5rem;
+    position: relative; /* For badge positioning */
 }
 
 /* Hamburger Menu */
@@ -501,6 +502,7 @@ body {
     padding: 0.5rem;
     cursor: pointer;
     transition: color 0.2s ease, transform 0.1s ease;
+    position: relative; /* Needed for badge positioning */
 }
 
 .btn-icon:hover {
@@ -860,8 +862,8 @@ body {
     padding: 0.2em 0.5em;
     font-size: 0.7em;
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 0px; /* Adjusted */
+    right: 0px; /* Adjusted */
     transform: translate(50%, -50%);
     display: flex;
     justify-content: center;
@@ -1037,27 +1039,18 @@ body {
     .nav-menu {
         position: fixed;
         top: 0;
-        left: -250px; /* Hide off-screen */
+        right: -250px; /* Hide off-screen to the right */
         height: 100%;
         z-index: 90; /* Below top-bar, above content */
-        transition: left 0.3s ease;
+        transition: right 0.3s ease;
         border-radius: 0;
     }
 
     .nav-menu.open {
-        left: 0; /* Slide in */
+        right: 0; /* Slide in from the right */
     }
 
-    .content {
-        margin-left: 0; /* No margin when nav is closed */
-        transition: margin-left 0.3s ease;
-    }
-
-    body.nav-open .content {
-        margin-left: 250px; /* Push content when nav is open */
-        overflow: hidden; /* Prevent content scroll when nav is open */
-    }
-
+    /* No margin changes for content when nav is open, it will overlay */
     body.nav-open {
         overflow: hidden; /* Prevent body scroll when nav is open */
     }
