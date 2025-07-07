@@ -557,10 +557,10 @@ function initializeSampleData() {
                 type: "production",
                 priority: "high",
                 startDate: today.toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(today, 5).toISOString().slice(0, 10),
+                estimatedDeliveryDate: null, // Will be calculated
                 status: "pending",
                 notes: "Urgent order",
-                dailyWorkload: {} // Will be recalculated on load if needed
+                dailyWorkload: {} // Will be calculated
             },
             {
                 id: generateId(),
@@ -569,10 +569,10 @@ function initializeSampleData() {
                 type: "sample",
                 priority: "medium",
                 startDate: addDays(today, 7).toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(today, 10).toISOString().slice(0, 10),
+                estimatedDeliveryDate: null, // Will be calculated
                 status: "pending",
                 notes: "New sample for client C",
-                dailyWorkload: {} // Will be recalculated on load if needed
+                dailyWorkload: {} // Will be calculated
             },
             {
                 id: generateId(),
@@ -581,10 +581,10 @@ function initializeSampleData() {
                 type: "production",
                 priority: "low",
                 startDate: addDays(today, 14).toISOString().slice(0, 10),
-                estimatedDeliveryDate: addDays(today, 18).toISOString().slice(0, 10),
+                estimatedDeliveryDate: null, // Will be calculated
                 status: "pending",
                 notes: "First batch of integral sweaters",
-                dailyWorkload: {} // Will be recalculated on load if needed
+                dailyWorkload: {} // Will be calculated
             }
         ],
         notifications: [
@@ -602,6 +602,163 @@ function initializeSampleData() {
     saveData();
     console.log("Dati di esempio caricati e salvati.");
 }
+
+/**
+ * Calculates the daily workload and estimated delivery date for a given article and quantity.
+ * @param {Object} article The article object.
+ * @param {number} quantity The quantity to produce.
+ * @param {Date} startDate The desired start date (Date object).
+ * @returns {{dailyWorkload: Object, estimatedDeliveryDate: Date}} The calculated workload and delivery date.
+ */
+function calculateLotWorkload(article, quantity, startDate) {
+    let remainingQuantityToProduce = quantity;
+    let currentDate = new Date(startDate);
+    let dailyWorkload = {};
+    let estimatedDeliveryDate = null;
+    const workingHoursPerDay = 8; // Assuming 8 working hours per day
+
+    const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
+    let iterationCount = 0;
+
+    // Loop day by day until all quantity is produced
+    while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
+        const dateKey = currentDate.toISOString().slice(0, 10);
+        dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
+
+        let minDailyPiecesAcrossPhases = Infinity; // This will be the bottleneck for the article's production today
+
+        // Calculate daily capacity for each phase of the article
+        article.cycle.forEach(cycleStep => {
+            const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
+            if (!phase) return; // Skip if phase not found
+
+            let totalPhaseDailyCapacityPieces = 0;
+
+            // If the cycle step specifies a machine type and fineness, use machine capacity
+            if (cycleStep.machineType && cycleStep.fineness) {
+                const requiredMachineType = cycleStep.machineType;
+                const requiredFineness = cycleStep.fineness;
+
+                const suitableMachines = appData.machines.filter(m => {
+                    // Check if machine type matches required type
+                    const machineTypeMatches = m.name.split(' ')[0] === requiredMachineType;
+                    // Check if fineness matches required fineness
+                    const finenessMatches = m.fineness === requiredFineness;
+                    return machineTypeMatches && finenessMatches;
+                });
+
+                suitableMachines.forEach(machine => {
+                    const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity));
+                    totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
+                });
+            } else if (phase.dailyCapacity !== undefined) {
+                // If phase has a defined dailyCapacity (for manual/generic phases)
+                totalPhaseDailyCapacityPieces = phase.dailyCapacity;
+            } else {
+                // Fallback: if no machine specified and no dailyCapacity, assume zero capacity
+                console.warn(`Fase "${phase.name}" (ID: ${phase.id}) nel ciclo dell'articolo non ha capacità definita (né macchina specifica né dailyCapacity). Considerata capacità zero.`);
+                totalPhaseDailyCapacityPieces = 0;
+            }
+
+            // Update the bottleneck for the article's production today
+            if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
+                minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
+            }
+        });
+
+        // If no capacity found for any phase, or capacity is zero, break to avoid infinite loop
+        if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
+            // This case should ideally be caught before calling this function or handled with a warning
+            // For now, it will set estimatedDeliveryDate to current date and break.
+            estimatedDeliveryDate = currentDate;
+            break;
+        }
+
+        const piecesToProduceToday = Math.floor(Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases)); // Round down to integer
+
+        if (piecesToProduceToday > 0) {
+            // Distribute these pieces across phases for the daily workload record
+            article.cycle.forEach(cycleStep => {
+                const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
+                if (!phase) return;
+
+                let assignedMachineId = null;
+                if (cycleStep.machineType && cycleStep.fineness) {
+                    // Try to assign to a suitable machine if specified
+                    const suitableMachines = appData.machines.filter(m =>
+                        m.name.split(' ')[0] === cycleStep.machineType && m.fineness === cycleStep.fineness
+                    );
+                    if (suitableMachines.length > 0) {
+                        assignedMachineId = suitableMachines[0].id; // Assign to the first suitable machine
+                    }
+                } else {
+                    // For non-machine specific phases, assign to a dummy ID or a generic machine if available
+                    if (appData.machines.length > 0) {
+                         assignedMachineId = appData.machines[0].id; // Arbitrary assignment for display
+                    } else {
+                         assignedMachineId = 0; // Placeholder for "no machine"
+                    }
+                }
+
+                dailyWorkload[dateKey][phase.id] = {
+                    quantity: piecesToProduceToday,
+                    machine: assignedMachineId // Store the assigned machine ID or placeholder
+                };
+            });
+            remainingQuantityToProduce -= piecesToProduceToday;
+        }
+
+        if (remainingQuantityToProduce <= 0) {
+            estimatedDeliveryDate = currentDate;
+            break;
+        }
+
+        // Advance to the next working day
+        do {
+            currentDate = addDays(currentDate, 1);
+        } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
+
+        iterationCount++;
+    }
+
+    if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
+        // If max iterations reached, it means planning is too long or impossible
+        estimatedDeliveryDate = currentDate; // Fallback to current date
+    } else if (!estimatedDeliveryDate) {
+        estimatedDeliveryDate = currentDate; // Fallback if loop finishes without exact match (shouldn't happen with remainingQuantityToProduce check)
+    }
+
+    return { dailyWorkload, estimatedDeliveryDate };
+}
+
+/**
+ * Recalculates the workload for all planning lots.
+ * This is useful on app load to ensure all existing data has calculated workloads.
+ */
+function recalculateAllPlanningWorkloads() {
+    let needsSave = false;
+    appData.productionPlan.forEach(lot => {
+        // Only recalculate if dailyWorkload is empty or if article/quantity/startDate might have changed
+        // For simplicity, we'll recalculate if dailyWorkload is empty or if estimatedDeliveryDate is null.
+        if (!lot.dailyWorkload || Object.keys(lot.dailyWorkload).length === 0 || !lot.estimatedDeliveryDate) {
+            const article = appData.articles.find(a => a.id === lot.articleId);
+            if (article) {
+                const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(
+                    article,
+                    lot.quantity,
+                    new Date(lot.startDate)
+                );
+                lot.dailyWorkload = dailyWorkload;
+                lot.estimatedDeliveryDate = estimatedDeliveryDate.toISOString().slice(0, 10);
+                needsSave = true;
+            }
+        }
+    });
+    if (needsSave) {
+        saveData();
+    }
+}
+
 
 /**
  * Updates all UI elements that depend on appData.
@@ -2401,12 +2558,50 @@ function calculateDelivery() {
                         text: 'Procedi Comunque',
                         className: 'btn-warning',
                         isPrimary: true,
-                        onClick: () => proceedWithCalculation(article, quantity, startDate)
+                        onClick: () => {
+                            const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(article, quantity, startDate);
+                            updatePlanningResultDisplay(startDate, quantity, estimatedDeliveryDate, dailyWorkload);
+                            currentCalculatedPlanningDetails = {
+                                id: currentEditingId.planning || generateId(),
+                                articleId: article.id,
+                                quantity: quantity,
+                                type: planningTypeInput.value,
+                                priority: planningPriorityInput.value,
+                                startDate: startDate.toISOString().slice(0, 10),
+                                estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
+                                status: "pending",
+                                notes: planningNotesInput.value.trim(),
+                                dailyWorkload: dailyWorkload
+                            };
+                            const savePlanningBtn = document.getElementById('savePlanningBtn');
+                            const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
+                            if (savePlanningBtn) savePlanningBtn.style.display = 'inline-block';
+                            if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'inline-block';
+                            showNotification('Calcolo completato. Rivedi i dettagli e salva la pianificazione.', 'info');
+                        }
                     }
                 ]
             );
         } else {
-            proceedWithCalculation(article, quantity, startDate);
+            const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(article, quantity, startDate);
+            updatePlanningResultDisplay(startDate, quantity, estimatedDeliveryDate, dailyWorkload);
+            currentCalculatedPlanningDetails = {
+                id: currentEditingId.planning || generateId(),
+                articleId: article.id,
+                quantity: quantity,
+                type: planningTypeInput.value,
+                priority: planningPriorityInput.value,
+                startDate: startDate.toISOString().slice(0, 10),
+                estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
+                status: "pending",
+                notes: planningNotesInput.value.trim(),
+                dailyWorkload: dailyWorkload
+            };
+            const savePlanningBtn = document.getElementById('savePlanningBtn');
+            const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
+            if (savePlanningBtn) savePlanningBtn.style.display = 'inline-block';
+            if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'inline-block';
+            showNotification('Calcolo completato. Rivedi i dettagli e salva la pianificazione.', 'info');
         }
     } catch (error) {
         console.error("Errore nella funzione calculateDelivery:", error);
@@ -2415,130 +2610,15 @@ function calculateDelivery() {
 }
 
 /**
- * Proceeds with the delivery date calculation after material check.
- * @param {Object} article The article object.
- * @param {number} quantity The quantity to produce.
- * @param {Date} startDate The desired start date (Date object).
+ * Updates the display area for planning calculation results.
+ * @param {Date} startDate The start date.
+ * @param {number} quantity The total quantity.
+ * @param {Date} estimatedDeliveryDate The estimated delivery date.
+ * @param {Object} dailyWorkload The detailed daily workload.
  */
-function proceedWithCalculation(article, quantity, startDate) {
-    let remainingQuantityToProduce = quantity;
-    let currentDate = new Date(startDate);
-    let dailyWorkload = {};
-    let estimatedDeliveryDate = null;
-    const workingHoursPerDay = 8; // Assuming 8 working hours per day
-
-    const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
-    let iterationCount = 0;
-
-    // Loop day by day until all quantity is produced
-    while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
-        const dateKey = currentDate.toISOString().slice(0, 10);
-        dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
-
-        let minDailyPiecesAcrossPhases = Infinity; // This will be the bottleneck for the article's production today
-
-        // Calculate daily capacity for each phase of the article
-        article.cycle.forEach(cycleStep => {
-            const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-            if (!phase) return; // Skip if phase not found
-
-            let totalPhaseDailyCapacityPieces = 0;
-
-            // If the cycle step specifies a machine type and fineness, use machine capacity
-            if (cycleStep.machineType && cycleStep.fineness) {
-                const requiredMachineType = cycleStep.machineType;
-                const requiredFineness = cycleStep.fineness;
-
-                const suitableMachines = appData.machines.filter(m => {
-                    // Check if machine type matches required type
-                    const machineTypeMatches = m.name.split(' ')[0] === requiredMachineType;
-                    // Check if fineness matches required fineness
-                    const finenessMatches = m.fineness === requiredFineness;
-                    return machineTypeMatches && finenessMatches;
-                });
-
-                suitableMachines.forEach(machine => {
-                    const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity));
-                    totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
-                });
-            } else if (phase.dailyCapacity !== undefined) {
-                // If phase has a defined dailyCapacity (for manual/generic phases)
-                totalPhaseDailyCapacityPieces = phase.dailyCapacity;
-            } else {
-                // Fallback: if no machine specified and no dailyCapacity, assume zero capacity
-                console.warn(`Fase "${phase.name}" (ID: ${phase.id}) nel ciclo dell'articolo non ha capacità definita (né macchina specifica né dailyCapacity). Considerata capacità zero.`);
-                totalPhaseDailyCapacityPieces = 0;
-            }
-
-            // Update the bottleneck for the article's production today
-            if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
-                minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
-            }
-        });
-
-        // If no capacity found for any phase, or capacity is zero, break to avoid infinite loop
-        if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
-            showNotification('Attenzione: Nessuna capacità produttiva sufficiente trovata per l\'articolo. La pianificazione potrebbe non essere accurata.', 'warning', 5000);
-            estimatedDeliveryDate = currentDate; // Set current date as fallback
-            break; // Break the loop if no capacity
-        }
-
-        const piecesToProduceToday = Math.floor(Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases)); // Round down to integer
-
-        if (piecesToProduceToday > 0) {
-            // Distribute these pieces across phases for the daily workload record
-            article.cycle.forEach(cycleStep => {
-                const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-                if (!phase) return;
-
-                let assignedMachineId = null;
-                if (cycleStep.machineType && cycleStep.fineness) {
-                    // Try to assign to a suitable machine if specified
-                    const suitableMachines = appData.machines.filter(m =>
-                        m.name.split(' ')[0] === cycleStep.machineType && m.fineness === cycleStep.fineness
-                    );
-                    if (suitableMachines.length > 0) {
-                        assignedMachineId = suitableMachines[0].id; // Assign to the first suitable machine
-                    }
-                } else {
-                    // For non-machine specific phases, assign to a dummy ID or a generic machine if available
-                    if (appData.machines.length > 0) {
-                         assignedMachineId = appData.machines[0].id; // Arbitrary assignment for display
-                    } else {
-                         assignedMachineId = 0; // Placeholder for "no machine"
-                    }
-                }
-
-                dailyWorkload[dateKey][phase.id] = {
-                    quantity: piecesToProduceToday,
-                    machine: assignedMachineId // Store the assigned machine ID or placeholder
-                };
-            });
-            remainingQuantityToProduce -= piecesToProduceToday;
-        }
-
-        if (remainingQuantityToProduce <= 0) {
-            estimatedDeliveryDate = currentDate;
-            break;
-        }
-
-        // Advance to the next working day
-        do {
-            currentDate = addDays(currentDate, 1);
-        } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
-
-        iterationCount++;
-    }
-
-    if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
-        showNotification('Attenzione: Impossibile calcolare la pianificazione entro un periodo di tempo ragionevole. Controlla le capacità dei macchinari e i cicli degli articoli.', 'error', 8000);
-        estimatedDeliveryDate = currentDate; // Fallback to current date if max iterations reached
-    } else if (!estimatedDeliveryDate) {
-        estimatedDeliveryDate = currentDate; // Fallback if loop finishes without exact match
-    }
-
+function updatePlanningResultDisplay(startDate, quantity, estimatedDeliveryDate, dailyWorkload) {
     const deliveryResultDiv = document.getElementById('deliveryResult');
-    if (!deliveryResultDiv) return; // Defensive check
+    if (!deliveryResultDiv) return;
 
     deliveryResultDiv.innerHTML = `
         <p>Data di Inizio Desiderata: <strong>${formatDate(startDate)}</strong></p>
@@ -2549,7 +2629,7 @@ function proceedWithCalculation(article, quantity, startDate) {
     `;
 
     const workloadList = document.getElementById('calculatedWorkloadList');
-    if (workloadList) { // Defensive check
+    if (workloadList) {
         for (const date in dailyWorkload) {
             const dateLi = document.createElement('li');
             dateLi.innerHTML = `<strong>${formatDate(new Date(date))}</strong>:`;
@@ -2559,7 +2639,6 @@ function proceedWithCalculation(article, quantity, startDate) {
                 const machine = appData.machines.find(m => m.id === dailyWorkload[date][phaseId].machine);
                 if (phase) {
                     const phaseLi = document.createElement('li');
-                    // Display quantity as integer
                     phaseLi.textContent = `${phase.name}: ${Math.floor(dailyWorkload[date][phaseId].quantity)} pz ${machine ? 'su Macchina ' + machine.name : '(Nessuna macchina specifica)'}`;
                     phaseUl.appendChild(phaseLi);
                 }
@@ -2568,26 +2647,8 @@ function proceedWithCalculation(article, quantity, startDate) {
             workloadList.appendChild(dateLi);
         }
     }
-
-    currentCalculatedPlanningDetails = {
-        id: currentEditingId.planning || generateId(), // Use existing ID if editing, otherwise generate new
-        articleId: article.id, // Use article.id directly
-        quantity: quantity,
-        type: document.getElementById('planningType').value,
-        priority: document.getElementById('planningPriority').value,
-        startDate: startDate.toISOString().slice(0, 10),
-        estimatedDeliveryDate: estimatedDeliveryDate.toISOString().slice(0, 10),
-        status: "pending", // Always pending when calculated/saved
-        notes: document.getElementById('planningNotes').value.trim(),
-        dailyWorkload: dailyWorkload
-    };
-
-    const savePlanningBtn = document.getElementById('savePlanningBtn');
-    const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
-    if (savePlanningBtn) savePlanningBtn.style.display = 'inline-block';
-    if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'inline-block';
-    showNotification('Calcolo completato. Rivedi i dettagli e salva la pianificazione.', 'info');
 }
+
 
 /**
  * Saves the calculated production planning to appData.
@@ -2747,109 +2808,19 @@ function saveEditedPlanning() {
         // Re-calculate estimated delivery date and daily workload if article, quantity or start date changed
         const article = appData.articles.find(a => a.id === lot.articleId);
         if (article) {
-            let remainingQuantityToProduce = lot.quantity;
-            let currentDate = new Date(lot.startDate); // Use the new start date
-            let dailyWorkload = {};
-            let estimatedDeliveryDate = null;
-            const workingHoursPerDay = 8;
-
-            const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
-            let iterationCount = 0;
-
-            while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
-                const dateKey = currentDate.toISOString().slice(0, 10);
-                dailyWorkload[dateKey] = dailyWorkload[dateKey] || {};
-
-                let minDailyPiecesAcrossPhases = Infinity;
-
-                article.cycle.forEach(cycleStep => {
-                    const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-                    if (!phase) return;
-
-                    let totalPhaseDailyCapacityPieces = 0;
-
-                    if (cycleStep.machineType && cycleStep.fineness) {
-                        const requiredMachineType = cycleStep.machineType;
-                        const requiredFineness = cycleStep.fineness;
-
-                        const suitableMachines = appData.machines.filter(m => {
-                            const machineTypeMatches = m.name.split(' ')[0] === requiredMachineType;
-                            const finenessMatches = m.fineness === requiredFineness;
-                            return machineTypeMatches && finenessMatches;
-                        });
-
-                        suitableMachines.forEach(machine => {
-                            const effectiveHourlyCapacityForThisArticlePhase = Math.min(machine.capacity, (cycleStep.time > 0 ? (60 / cycleStep.time) : Infinity));
-                            totalPhaseDailyCapacityPieces += effectiveHourlyCapacityForThisArticlePhase * workingHoursPerDay;
-                        });
-                    } else if (phase.dailyCapacity !== undefined) {
-                        totalPhaseDailyCapacityPieces = phase.dailyCapacity;
-                    } else {
-                        console.warn(`Fase "${phase.name}" (ID: ${phase.id}) nel ciclo dell'articolo non ha capacità definita (né macchina specifica né dailyCapacity). Considerata capacità zero.`);
-                        totalPhaseDailyCapacityPieces = 0;
-                    }
-
-                    if (totalPhaseDailyCapacityPieces < minDailyPiecesAcrossPhases) {
-                        minDailyPiecesAcrossPhases = totalPhaseDailyCapacityPieces;
-                    }
-                });
-
-                if (minDailyPiecesAcrossPhases === Infinity || minDailyPiecesAcrossPhases <= 0) {
-                    estimatedDeliveryDate = currentDate;
-                    break;
-                }
-
-                const piecesToProduceToday = Math.floor(Math.min(remainingQuantityToProduce, minDailyPiecesAcrossPhases)); // Round down to integer
-
-                if (piecesToProduceToday > 0) {
-                    article.cycle.forEach(cycleStep => {
-                        const phase = appData.phases.find(p => p.id === cycleStep.phaseId);
-                        if (!phase) return;
-
-                        let assignedMachineId = null;
-                        if (cycleStep.machineType && cycleStep.fineness) {
-                            const suitableMachines = appData.machines.filter(m =>
-                                m.name.split(' ')[0] === cycleStep.machineType && m.fineness === cycleStep.fineness
-                            );
-                            if (suitableMachines.length > 0) {
-                                assignedMachineId = suitableMachines[0].id;
-                            }
-                        } else {
-                             if (appData.machines.length > 0) {
-                                 assignedMachineId = appData.machines[0].id;
-                            } else {
-                                 assignedMachineId = 0;
-                            }
-                        }
-
-                        dailyWorkload[dateKey][phase.id] = {
-                            quantity: piecesToProduceToday,
-                            machine: assignedMachineId
-                        };
-                    });
-                    remainingQuantityToProduce -= piecesToProduceToday;
-                }
-
-                if (remainingQuantityToProduce <= 0) {
-                    estimatedDeliveryDate = currentDate;
-                    break;
-                }
-
-                do {
-                    currentDate = addDays(currentDate, 1);
-                } while (currentDate.getDay() === 0 || currentDate.getDay() === 6);
-
-                iterationCount++;
-            }
-            if (iterationCount >= MAX_PLANNING_DAYS && remainingQuantityToProduce > 0) {
-                showNotification('Attenzione: Impossibile ricalcolare la pianificazione entro un periodo di tempo ragionevole. Controlla le capacità dei macchinari e i cicli degli articoli.', 'error', 8000);
-                lot.estimatedDeliveryDate = currentDate.toISOString().slice(0, 10);
-            } else {
-                lot.estimatedDeliveryDate = estimatedDeliveryDate ? estimatedDeliveryDate.toISOString().slice(0, 10) : lot.startDate;
-            }
+            const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(
+                article,
+                lot.quantity,
+                new Date(lot.startDate)
+            );
             lot.dailyWorkload = dailyWorkload;
+            lot.estimatedDeliveryDate = estimatedDeliveryDate.toISOString().slice(0, 10);
+        } else {
+            showNotification('Articolo non trovato per il ricalcolo del lotto di pianificazione.', 'error');
+            // If article not found, clear workload and delivery date to avoid displaying incorrect data
+            lot.dailyWorkload = {};
+            lot.estimatedDeliveryDate = null;
         }
-
 
         saveData();
         updateDeliverySchedule();
@@ -2903,8 +2874,8 @@ function updatePlanningList() {
                 <strong>Articolo:</strong> ${articleInfo} (${lot.quantity} pz)<br>
                 <strong>Tipo:</strong> ${lot.type === 'production' ? 'Produzione' : 'Campionatura'}<br>
                 <strong>Priorità:</strong> <span class="priority-text">${lot.priority.charAt(0).toUpperCase() + lot.priority.slice(1)}</span><br>
-                <strong>Inizio Stimato:</strong> ${formatDate(new Date(lot.startDate))}<br>
-                <strong>Consegna Stimata:</strong> ${formatDate(new Date(lot.estimatedDeliveryDate))}<br>
+                <strong>Inizio Stimato:</strong> ${lot.startDate ? formatDate(new Date(lot.startDate)) : 'N/D'}<br>
+                <strong>Consegna Stimata:</strong> ${lot.estimatedDeliveryDate ? formatDate(new Date(lot.estimatedDeliveryDate)) : 'N/D'}<br>
                 <strong>Stato:</strong> ${lot.status.charAt(0).toUpperCase() + lot.status.slice(1)}<br>
                 ${lot.notes ? `<strong>Note:</strong> ${lot.notes}` : ''}
             </div>
@@ -3769,6 +3740,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load and initialize app data, including users
     loadAndInitializeAppData();
+
+    // Recalculate workloads for all planning items on load to ensure calendar display
+    recalculateAllPlanningWorkloads();
 
     // Apply saved theme preference
     const savedTheme = localStorage.getItem('theme');
