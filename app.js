@@ -6,7 +6,8 @@ let currentEditingId = {
     rawMaterials: null,
     articles: null,
     planning: null,
-    users: null // New: for user management
+    users: null, // New: for user management
+    holidays: null // New: for holiday management
 };
 
 // Global variable to store the current logged-in user
@@ -22,7 +23,8 @@ let appData = {
     articles: [],
     productionPlan: [],
     notifications: [],
-    users: [], // New: users data
+    users: [],
+    holidays: [], // New: Store non-working days (holidays)
     currentDeliveryWeekStartDate: null,
     currentWorkloadWeekStartDate: null
 };
@@ -403,6 +405,7 @@ function loadAndInitializeAppData() {
         appData.productionPlan = appData.productionPlan || [];
         appData.notifications = appData.notifications || [];
         appData.users = appData.users || [];
+        appData.holidays = appData.holidays || []; // Ensure holidays array exists
         
         // Ensure nested arrays within departments are also initialized
         appData.departments.forEach(dept => {
@@ -596,11 +599,59 @@ function initializeSampleData() {
             { id: 2, username: "planner", password: "planner", roles: ["planning"], forcePasswordChange: false },
             { id: 3, username: "warehouse", password: "warehouse", roles: ["warehouse"], forcePasswordChange: false }
         ],
+        holidays: [
+            // Sample holidays (ISO string format YYYY-MM-DD)
+            { id: generateId(), date: '2025-01-01', description: 'Capodanno' },
+            { id: generateId(), date: '2025-04-21', description: 'Pasquetta' },
+            { id: generateId(), date: '2025-04-25', description: 'Festa della Liberazione' },
+            { id: generateId(), date: '2025-05-01', description: 'Festa del Lavoro' },
+            { id: generateId(), date: '2025-06-02', description: 'Festa della Repubblica' },
+            { id: generateId(), date: '2025-08-15', description: 'Ferragosto' },
+            { id: generateId(), date: '2025-11-01', description: 'Ognissanti' },
+            { id: generateId(), date: '2025-12-08', description: 'Immacolata Concezione' },
+            { id: generateId(), date: '2025-12-25', description: 'Natale' },
+            { id: generateId(), date: '2025-12-26', description: 'Santo Stefano' }
+        ],
         currentDeliveryWeekStartDate: startOfWeek(today),
         currentWorkloadWeekStartDate: startOfWeek(today)
     };
     saveData();
     console.log("Dati di esempio caricati e salvati.");
+}
+
+/**
+ * Checks if a given date is a working day (Monday-Friday and not a holiday).
+ * @param {Date} date The date to check.
+ * @returns {boolean} True if it's a working day, false otherwise.
+ */
+function isWorkingDay(date) {
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+    const dateString = date.toISOString().slice(0, 10);
+    const isHoliday = appData.holidays.some(h => h.date === dateString);
+
+    return !isWeekend && !isHoliday;
+}
+
+/**
+ * Adds a specified number of *working* days to a given date.
+ * Skips weekends and holidays.
+ * @param {Date} date The starting date.
+ * @param {number} days The number of working days to add.
+ * @returns {Date} The new date adjusted for working days.
+ */
+function addWorkingDays(date, days) {
+    const result = new Date(date);
+    let daysAdded = 0;
+
+    while (daysAdded < days) {
+        result.setDate(result.getDate() + 1); // Move to the next day
+        if (isWorkingDay(result)) {
+            daysAdded++;
+        }
+    }
+    return result;
 }
 
 /**
@@ -619,6 +670,12 @@ function calculateLotWorkload(article, quantity, startDate) {
 
     const MAX_PLANNING_DAYS = 365 * 2; // Max 2 years for planning calculation to prevent infinite loops
     let iterationCount = 0;
+
+    // Ensure the start date is a working day
+    while (!isWorkingDay(currentDate) && iterationCount < MAX_PLANNING_DAYS) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        iterationCount++;
+    }
 
     // Loop day by day until all quantity is produced
     while (remainingQuantityToProduce > 0 && iterationCount < MAX_PLANNING_DAYS) {
@@ -715,8 +772,8 @@ function calculateLotWorkload(article, quantity, startDate) {
 
         // Advance to the next working day
         do {
-            currentDate = addDays(currentDate, 1);
-        } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); // Skip Sundays (0) and Saturdays (6)
+            currentDate.setDate(currentDate.getDate() + 1);
+        } while (!isWorkingDay(currentDate) && iterationCount < MAX_PLANNING_DAYS);
 
         iterationCount++;
     }
@@ -738,18 +795,31 @@ function calculateLotWorkload(article, quantity, startDate) {
 function recalculateAllPlanningWorkloads() {
     let needsSave = false;
     appData.productionPlan.forEach(lot => {
-        // Only recalculate if dailyWorkload is empty or if article/quantity/startDate might have changed
-        // For simplicity, we'll recalculate if dailyWorkload is empty or if estimatedDeliveryDate is null.
-        if (!lot.dailyWorkload || Object.keys(lot.dailyWorkload).length === 0 || !lot.estimatedDeliveryDate) {
-            const article = appData.articles.find(a => a.id === lot.articleId);
-            if (article) {
-                const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(
-                    article,
-                    lot.quantity,
-                    new Date(lot.startDate)
-                );
+        // Only recalculate if dailyWorkload is empty or if estimatedDeliveryDate is null.
+        // Or if the article, quantity, or start date might have changed.
+        // For robustness, always recalculate on load.
+        const article = appData.articles.find(a => a.id === lot.articleId);
+        if (article) {
+            const { dailyWorkload, estimatedDeliveryDate } = calculateLotWorkload(
+                article,
+                lot.quantity,
+                new Date(lot.startDate)
+            );
+            // Check if recalculation actually changed anything significant before marking needsSave
+            const oldDailyWorkloadKeys = Object.keys(lot.dailyWorkload || {}).sort().join(',');
+            const newDailyWorkloadKeys = Object.keys(dailyWorkload || {}).sort().join(',');
+
+            if (oldDailyWorkloadKeys !== newDailyWorkloadKeys ||
+                lot.estimatedDeliveryDate !== estimatedDeliveryDate.toISOString().slice(0, 10)) {
                 lot.dailyWorkload = dailyWorkload;
                 lot.estimatedDeliveryDate = estimatedDeliveryDate.toISOString().slice(0, 10);
+                needsSave = true;
+            }
+        } else {
+            // If article not found, clear workload and delivery date to avoid displaying incorrect data
+            if (lot.dailyWorkload || lot.estimatedDeliveryDate) {
+                lot.dailyWorkload = {};
+                lot.estimatedDeliveryDate = null;
                 needsSave = true;
             }
         }
@@ -776,6 +846,7 @@ function updateAllUI() {
     populateRawMaterialSelect();
     populateDepartmentPhaseSelect();
     updateUsersTable(); // New: Update users table
+    updateHolidaysTable(); // New: Update holidays table
     updateDeliverySchedule(); // Update calendar for deliveries
     updateDailyWorkloadCalendar(); // Update calendar for workload
     updatePlanningList(); // Update detailed planning list
@@ -916,6 +987,10 @@ function showPage(pageId) {
         case 'users':
             updateUsersTable();
             setTimeout(() => resetUserForm(), 0); // Defer reset
+            break;
+        case 'holidays': // New case for holidays page
+            updateHolidaysTable();
+            setTimeout(() => resetHolidayForm(), 0);
             break;
     }
 }
@@ -2521,8 +2596,40 @@ function calculateDelivery() {
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Normalize today for comparison
 
-        if (startDate < today) {
-            showNotification('La data di inizio desiderata non può essere nel passato.', 'error');
+        // IMPORTANT: Check against working days now
+        if (!isWorkingDay(startDate) || startDate < today) {
+             showMessageBox(
+                'Data di Inizio Non Valida',
+                'La data di inizio desiderata non può essere nel passato, un weekend o un giorno rosso. Vuoi selezionare il prossimo giorno lavorativo disponibile?',
+                [
+                    {
+                        text: 'Annulla',
+                        className: 'btn-secondary',
+                        onClick: () => {
+                            const savePlanningBtn = document.getElementById('savePlanningBtn');
+                            const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
+                            const deliveryResultDiv = document.getElementById('deliveryResult');
+                            if (savePlanningBtn) savePlanningBtn.style.display = 'none';
+                            if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'none';
+                            if (deliveryResultDiv) deliveryResultDiv.innerHTML = '<p style="text-align: center; color: var(--text-color);">Pianificazione annullata.</p>';
+                            currentCalculatedPlanningDetails = null;
+                        }
+                    },
+                    {
+                        text: 'Prossimo Giorno Lavorativo',
+                        className: 'btn-primary',
+                        isPrimary: true,
+                        onClick: () => {
+                            let nextWorkingDay = new Date(startDateStr);
+                            do {
+                                nextWorkingDay.setDate(nextWorkingDay.getDate() + 1);
+                            } while (!isWorkingDay(nextWorkingDay));
+                            planningStartDateInput.value = nextWorkingDay.toISOString().slice(0, 10);
+                            calculateDelivery(); // Recalculate with the new date
+                        }
+                    }
+                ]
+            );
             return;
         }
 
@@ -2797,6 +2904,16 @@ function saveEditedPlanning() {
             return;
         }
 
+        const newStartDate = new Date(newStartDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // IMPORTANT: Check against working days now
+        if (!isWorkingDay(newStartDate) || newStartDate < today) {
+            showNotification('La nuova data di inizio non può essere nel passato, un weekend o un giorno rosso.', 'error');
+            return;
+        }
+
         // Update fields
         lot.articleId = newArticleId;
         lot.quantity = newQuantity;
@@ -3003,6 +3120,12 @@ function updateDeliverySchedule() {
         const dayKey = day.toISOString().slice(0, 10);
         const dayColumn = document.createElement('div');
         dayColumn.className = 'day-column';
+
+        // Add class for non-working days for styling
+        if (!isWorkingDay(day)) {
+            dayColumn.classList.add('non-working-day');
+        }
+
         dayColumn.innerHTML = `<div class="day-header">${formatDate(day, { weekday: 'short', day: 'numeric', month: 'short' })}</div>`;
 
         const deliveriesForDay = appData.productionPlan.filter(p =>
@@ -3067,30 +3190,40 @@ function updateDailyWorkloadCalendar() {
         const dayKey = day.toISOString().slice(0, 10);
         const dayColumn = document.createElement('div');
         dayColumn.className = 'day-column';
+
+        // Add class for non-working days for styling
+        if (!isWorkingDay(day)) {
+            dayColumn.classList.add('non-working-day');
+        }
+
         dayColumn.innerHTML = `<div class="day-header">${formatDate(day, { weekday: 'short', day: 'numeric', month: 'short' })}</div>`;
 
         // Aggregate workload for this day across all planning lots
         const dailyWorkloadAggregated = {}; // { departmentId: { phaseId: { quantity: X, machine: Y } } }
 
-        appData.productionPlan.forEach(lot => {
-            if (lot.dailyWorkload && lot.dailyWorkload[dayKey] && lot.status !== 'completed') {
-                for (const phaseId in lot.dailyWorkload[dayKey]) {
-                    const phaseData = lot.dailyWorkload[dayKey][phaseId];
-                    const phase = appData.phases.find(p => p.id === parseInt(phaseId));
-                    if (phase) {
-                        // Find department that contains this phase.
-                        // Note: A phase might be in multiple departments in a complex setup,
-                        // but for simplicity, we'll pick the first department that includes this phase.
-                        const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id));
-                        if (department) {
-                            dailyWorkloadAggregated[department.id] = dailyWorkloadAggregated[department.id] || {};
-                            dailyWorkloadAggregated[department.id][phase.id] = dailyWorkloadAggregated[department.id][phase.id] || { quantity: 0, machine: phaseData.machine };
-                            dailyWorkloadAggregated[department.id][phase.id].quantity += phaseData.quantity;
+        // Only show workload for working days
+        if (isWorkingDay(day)) {
+            appData.productionPlan.forEach(lot => {
+                if (lot.dailyWorkload && lot.dailyWorkload[dayKey] && lot.status !== 'completed') {
+                    for (const phaseId in lot.dailyWorkload[dayKey]) {
+                        const phaseData = lot.dailyWorkload[dayKey][phaseId];
+                        const phase = appData.phases.find(p => p.id === parseInt(phaseId));
+                        if (phase) {
+                            // Find department that contains this phase.
+                            // Note: A phase might be in multiple departments in a complex setup,
+                            // but for simplicity, we'll pick the first department that includes this phase.
+                            const department = appData.departments.find(d => (d.phaseIds || []).includes(phase.id));
+                            if (department) {
+                                dailyWorkloadAggregated[department.id] = dailyWorkloadAggregated[department.id] || {};
+                                dailyWorkloadAggregated[department.id][phase.id] = dailyWorkloadAggregated[department.id][phase.id] || { quantity: 0, machine: phaseData.machine };
+                                dailyWorkloadAggregated[department.id][phase.id].quantity += phaseData.quantity;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
+
 
         if (Object.keys(dailyWorkloadAggregated).length === 0) {
             dayColumn.innerHTML += '<p style="text-align: center; font-size: 0.9em; color: #aaa;">Nessun carico di lavoro</p>';
@@ -3696,6 +3829,186 @@ function deleteUser(userId) {
     );
 }
 
+// --- Funzioni per la Gestione dei Giorni Rossi (Holidays) ---
+
+/**
+ * Adds a new holiday or updates an existing one.
+ */
+function addHoliday() {
+    if (!hasRole('admin')) {
+        showNotification('Non hai i permessi per aggiungere/modificare giorni rossi.', 'error');
+        return;
+    }
+
+    const holidayDateInput = document.getElementById('holidayDate');
+    const holidayDescriptionInput = document.getElementById('holidayDescription');
+
+    const date = holidayDateInput ? holidayDateInput.value : '';
+    const description = holidayDescriptionInput ? holidayDescriptionInput.value.trim() : '';
+
+    if (!date || !description) {
+        showNotification('Per favore, inserisci una data e una descrizione per il giorno rosso.', 'error');
+        return;
+    }
+
+    // Check for duplicate date
+    if (appData.holidays.some(h => h.date === date && h.id !== currentEditingId.holidays)) {
+        showNotification('Esiste già un giorno rosso registrato per questa data.', 'error');
+        return;
+    }
+
+    if (currentEditingId.holidays) {
+        // Update existing holiday
+        const holidayIndex = appData.holidays.findIndex(h => h.id === currentEditingId.holidays);
+        if (holidayIndex > -1) {
+            appData.holidays[holidayIndex].date = date;
+            appData.holidays[holidayIndex].description = description;
+            showNotification('Giorno rosso aggiornato con successo!', 'success');
+        }
+    } else {
+        // Add new holiday
+        const newHoliday = {
+            id: generateId(),
+            date: date,
+            description: description
+        };
+        appData.holidays.push(newHoliday);
+        showNotification('Giorno rosso aggiunto con successo!', 'success');
+    }
+
+    saveData();
+    updateHolidaysTable();
+    resetHolidayForm();
+    recalculateAllPlanningWorkloads(); // Recalculate planning after holiday changes
+    updateDeliverySchedule(); // Refresh calendars
+    updateDailyWorkloadCalendar();
+}
+
+/**
+ * Populates the holidays table.
+ */
+function updateHolidaysTable() {
+    const tableBody = document.getElementById('holidaysTableBody');
+    if (!tableBody) return; // Defensive check
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    if (appData.holidays.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nessun giorno rosso registrato.</td></tr>';
+        return;
+    }
+
+    // Sort holidays by date
+    const sortedHolidays = [...appData.holidays].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    sortedHolidays.forEach(holiday => {
+        const row = tableBody.insertRow();
+        row.insertCell().textContent = formatDate(new Date(holiday.date));
+        row.insertCell().textContent = holiday.description;
+        const actionsCell = row.insertCell();
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn-sm btn-primary';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.title = 'Modifica Giorno Rosso';
+        editBtn.onclick = () => editHoliday(holiday.id);
+        actionsCell.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-sm btn-danger';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = 'Elimina Giorno Rosso';
+        deleteBtn.onclick = () => deleteHoliday(holiday.id);
+        actionsCell.appendChild(deleteBtn);
+    });
+}
+
+/**
+ * Loads a holiday into the form for editing.
+ * @param {number} holidayId The ID of the holiday to edit.
+ */
+function editHoliday(holidayId) {
+    if (!hasRole('admin')) {
+        showNotification('Non hai i permessi per modificare giorni rossi.', 'error');
+        return;
+    }
+
+    const holiday = appData.holidays.find(h => h.id === holidayId);
+    if (holiday) {
+        const holidayDateInput = document.getElementById('holidayDate');
+        const holidayDescriptionInput = document.getElementById('holidayDescription');
+        const saveBtn = document.getElementById('saveHolidayBtn');
+        const cancelBtn = document.getElementById('cancelHolidayBtn');
+
+        if (holidayDateInput) holidayDateInput.value = holiday.date;
+        if (holidayDescriptionInput) holidayDescriptionInput.value = holiday.description;
+        if (saveBtn) {
+            saveBtn.textContent = 'Salva Modifiche';
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Salva Modifiche';
+        }
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+        currentEditingId.holidays = holidayId;
+    } else {
+        showNotification('Giorno rosso non trovato.', 'error');
+    }
+}
+
+/**
+ * Resets the holiday form.
+ */
+function resetHolidayForm() {
+    const holidayDateInput = document.getElementById('holidayDate');
+    const holidayDescriptionInput = document.getElementById('holidayDescription');
+    const saveBtn = document.getElementById('saveHolidayBtn');
+    const cancelBtn = document.getElementById('cancelHolidayBtn');
+
+    if (holidayDateInput) holidayDateInput.value = '';
+    if (holidayDescriptionInput) holidayDescriptionInput.value = '';
+    if (saveBtn) {
+        saveBtn.textContent = 'Aggiungi Giorno Rosso';
+        saveBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Aggiungi Giorno Rosso';
+    }
+    if (cancelBtn) cancelBtn.style.display = 'none';
+    currentEditingId.holidays = null;
+}
+
+/**
+ * Deletes a holiday.
+ * @param {number} holidayId The ID of the holiday to delete.
+ */
+function deleteHoliday(holidayId) {
+    if (!hasRole('admin')) {
+        showNotification('Non hai i permessi per eliminare giorni rossi.', 'error');
+        return;
+    }
+
+    showMessageBox(
+        'Conferma Eliminazione',
+        'Sei sicuro di voler eliminare questo giorno rosso? Questa azione è irreversibile.',
+        [
+            {
+                text: 'Annulla',
+                className: 'btn-secondary',
+                onClick: () => {}
+            },
+            {
+                text: 'Elimina',
+                className: 'btn-danger',
+                isPrimary: true,
+                onClick: () => {
+                    appData.holidays = appData.holidays.filter(h => h.id !== holidayId);
+                    saveData();
+                    updateHolidaysTable();
+                    recalculateAllPlanningWorkloads(); // Recalculate planning after holiday changes
+                    updateDeliverySchedule(); // Refresh calendars
+                    updateDailyWorkloadCalendar();
+                    showNotification('Giorno rosso eliminato con successo!', 'success');
+                }
+            }
+        ]
+    );
+}
+
+
 // --- Funzioni di Utilità per Date ---
 
 /**
@@ -3742,6 +4055,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAndInitializeAppData();
 
     // Recalculate workloads for all planning items on load to ensure calendar display
+    // This is crucial for existing data to reflect new working day/holiday rules.
     recalculateAllPlanningWorkloads();
 
     // Apply saved theme preference
@@ -3773,3 +4087,9 @@ if (confirmActualConsumptionBtn) confirmActualConsumptionBtn.addEventListener('c
 // Event listener for the "Annulla" button in the actual consumption modal
 const cancelActualConsumptionBtn = document.getElementById('cancelActualConsumptionBtn');
 if (cancelActualConsumptionBtn) cancelActualConsumptionBtn.addEventListener('click', closeActualConsumptionModal);
+
+// Event listeners for Holiday management
+const saveHolidayBtn = document.getElementById('saveHolidayBtn');
+if (saveHolidayBtn) saveHolidayBtn.addEventListener('click', addHoliday);
+const cancelHolidayBtn = document.getElementById('cancelHolidayBtn');
+if (cancelHolidayBtn) cancelHolidayBtn.addEventListener('click', resetHolidayForm);
