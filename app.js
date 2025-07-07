@@ -656,6 +656,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listener for the login button
     const loginButton = document.getElementById('loginButton');
     if (loginButton) loginButton.addEventListener('click', loginUser);
+
+    // Attach handleLoginEnter to username and password inputs
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+
+    if (usernameInput) {
+        usernameInput.addEventListener('keydown', handleLoginEnter);
+    }
+    if (passwordInput) {
+        passwordInput.addEventListener('keydown', handleLoginEnter);
+    }
+
     // Add event listener for the confirm change password button
     const confirmChangePasswordBtn = document.getElementById('confirmChangePasswordBtn');
     if (confirmChangePasswordBtn) confirmChangePasswordBtn.addEventListener('click', handleChangePassword);
@@ -1420,7 +1432,7 @@ function addRawMaterialOrStock() {
 
     const selectedId = rawMaterialSelect.value;
     let name = newRawMaterialNameInput.value.trim();
-    const unit = rawMaterialUnitInput.value.trim();
+    const unit = rawMaterialUnitInput ? rawMaterialUnitInput.value.trim() : '';
     const quantity = parseFloat(rawMaterialQuantityInput.value);
     const loadDate = rawMaterialLoadDateInput.value;
     const barcode = rawMaterialBarcodeInput.value.trim();
