@@ -23,7 +23,7 @@ let appData = {
     productionPlan: [],
     notifications: [],
     users: [], // New: users data
-    holidays: [], // FIX: Ensure holidays array is initialized
+    holidays: [],
     currentDeliveryWeekStartDate: null,
     currentWorkloadWeekStartDate: null
 };
@@ -71,45 +71,135 @@ function saveData() {
 function loadData() {
     const storedData = localStorage.getItem('magliflexAppData');
     if (storedData) {
-        console.log("Dati caricati localmente.");
-        return JSON.parse(storedData);
+        try {
+            const parsedData = JSON.parse(storedData);
+            // Basic validation to ensure it's a valid appData structure
+            if (parsedData && typeof parsedData === 'object' &&
+                Array.isArray(parsedData.users) &&
+                Array.isArray(parsedData.phases) &&
+                Array.isArray(parsedData.holidays)) { // Check for a few key arrays
+                console.log("Dati caricati localmente.");
+                return parsedData;
+            } else {
+                console.warn("Dati in localStorage non validi o incompleti. Caricamento dati di default.");
+                localStorage.removeItem('magliflexAppData'); // Clear invalid data
+                return null; // Indicate no valid data was loaded
+            }
+        } catch (e) {
+            console.error("Errore nel parsing dei dati da localStorage:", e);
+            localStorage.removeItem('magliflexAppData'); // Clear corrupted data
+            return null; // Indicate no valid data was loaded
+        }
     }
     console.log("Nessun dato trovato in localStorage. Inizializzazione dati vuoti.");
-    return {
-        phases: [],
-        machines: [],
-        departments: [],
-        rawMaterials: [],
-        warehouseJournal: [],
-        articles: [],
-        productionPlan: [],
-        notifications: [],
-        users: [],
-        holidays: [], // FIX: Ensure holidays array is initialized here
-        currentDeliveryWeekStartDate: null,
-        currentWorkloadWeekStartDate: null
-    };
+    return null; // Indicate no data was loaded
 }
 
 /**
  * Initializes app data, ensuring default admin user exists and setting up initial week dates.
  */
 function loadAndInitializeAppData() {
-    appData = loadData();
+    let loadedData = loadData();
 
-    // Ensure default admin user exists
+    if (!loadedData) {
+        console.log("Inizializzazione con dati di esempio.");
+        appData = {
+            phases: [
+                { id: 1, name: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 2.5 },
+                { id: 2, name: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 1.0 },
+                { id: 3, name: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.5 },
+                { id: 4, name: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 1.5 },
+                { id: 5, name: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.2 }
+            ],
+            machines: [
+                { id: 201, name: 'Telaio A', departmentId: 101, departmentName: 'Reparto Tessitura', capacity: 100 },
+                { id: 202, name: 'Tintore Grande', departmentId: 102, departmentName: 'Reparto Tintoria', capacity: 500 },
+                { id: 203, name: 'Taglierina Laser', departmentId: 103, departmentName: 'Reparto Taglio', capacity: 200 }
+            ],
+            departments: [
+                { id: 101, name: 'Reparto Tessitura', description: 'Produzione tessuti' },
+                { id: 102, name: 'Reparto Tintoria', description: 'Tintura e finissaggio' },
+                { id: 103, name: 'Reparto Taglio', description: 'Taglio dei tessuti' },
+                { id: 104, name: 'Reparto Cucito', description: 'Assemblaggio capi' },
+                { id: 105, name: 'Reparto Controllo Qualità', description: 'Ispezione finale' }
+            ],
+            rawMaterials: [
+                { id: 301, name: 'Filato di Cotone', unit: 'kg', currentStock: 1500 },
+                { id: 302, name: 'Filato di Poliestere', unit: 'kg', currentStock: 800 },
+                { id: 303, name: 'Colorante Blu', unit: 'litri', currentStock: 200 }
+            ],
+            warehouseJournal: [],
+            articles: [
+                {
+                    id: 401,
+                    name: 'T-shirt Basic',
+                    description: 'Maglietta girocollo in cotone',
+                    cycle: [
+                        { phaseId: 1, phaseName: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 0.1 },
+                        { phaseId: 2, phaseName: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 0.05 },
+                        { phaseId: 3, phaseName: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.02 },
+                        { phaseId: 4, phaseName: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 0.08 },
+                        { phaseId: 5, phaseName: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
+                    ],
+                    bom: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone', unit: 'kg', quantity: 0.2 },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Blu', unit: 'litri', quantity: 0.01 }
+                    ]
+                },
+                {
+                    id: 402,
+                    name: 'Pantalone Sportivo',
+                    description: 'Pantalone in poliestere per attività sportiva',
+                    cycle: [
+                        { phaseId: 1, phaseName: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 0.2 },
+                        { phaseId: 2, phaseName: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 0.08 },
+                        { phaseId: 3, phaseName: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.03 },
+                        { phaseId: 4, phaseName: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 0.15 },
+                        { phaseId: 5, phaseName: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
+                    ],
+                    bom: [
+                        { rawMaterialId: 302, rawMaterialName: 'Filato di Poliestere', unit: 'kg', quantity: 0.3 },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Blu', unit: 'litri', quantity: 0.02 }
+                    ]
+                }
+            ],
+            productionPlan: [],
+            notifications: [],
+            users: [
+                {
+                    id: generateId(),
+                    username: 'admin',
+                    password: 'admin', // In a real app, hash this!
+                    roles: ['admin', 'planner', 'production', 'warehouse'],
+                    forcePasswordChange: false
+                }
+            ],
+            holidays: [
+                { id: generateId(), date: '2025-01-01', description: 'Capodanno' },
+                { id: generateId(), date: '2025-04-25', description: 'Festa della Liberazione' },
+                { id: generateId(), date: '2025-05-01', description: 'Festa del Lavoro' }
+            ],
+            currentDeliveryWeekStartDate: getStartOfWeek(new Date()).toISOString().split('T')[0],
+            currentWorkloadWeekStartDate: getStartOfWeek(new Date()).toISOString().split('T')[0]
+        };
+        saveData(); // Save initial example data
+    } else {
+        appData = loadedData;
+    }
+
+    // Ensure default admin user exists if it was somehow removed from loaded data
     if (!appData.users || appData.users.length === 0) {
-        appData.users.push({
+        appData.users = [{
             id: generateId(),
             username: 'admin',
             password: 'admin', // In a real app, hash this!
             roles: ['admin', 'planner', 'production', 'warehouse'],
             forcePasswordChange: false
-        });
-        saveData(); // Save immediately after adding default user
+        }];
+        saveData();
     }
 
-    // Initialize current week start dates if not set
+    // Initialize current week start dates if not set (could be null if loadedData was old format)
     if (!appData.currentDeliveryWeekStartDate) {
         appData.currentDeliveryWeekStartDate = getStartOfWeek(new Date()).toISOString().split('T')[0];
     }
@@ -802,7 +892,7 @@ function savePhase() {
     const duration = parseFloat(document.getElementById('phaseDurationInput').value);
 
     if (!name || !departmentId || isNaN(duration) || duration <= 0) {
-        showNotification('Per favore, compila tutti i campi correttamente per la fase.', 'error');
+        showNotification('Per favor, compila tutti i campi correttamente per la fase.', 'error');
         return;
     }
 
@@ -1275,7 +1365,7 @@ function saveRawMaterial() {
     const unit = document.getElementById('rawMaterialUnitInput').value;
 
     if (!name || !unit) {
-        showNotification('Per favore, compila tutti i campi per la materia prima.', 'error');
+        showNotification('Per favor, compila tutti i campi per la materia prima.', 'error');
         return;
     }
 
@@ -1737,7 +1827,7 @@ function saveArticle() {
         const duration = parseFloat(stepEl.querySelector('.step-duration-input').value);
 
         if (isNaN(phaseId) || isNaN(duration) || duration <= 0) {
-            showNotification('Per favore, completa tutte le fasi del ciclo di lavorazione con valori validi.', 'error');
+            showNotification('Per favor, completa tutte le fasi del ciclo di lavorazione con valori validi.', 'error');
             return;
         }
         const phase = appData.phases.find(p => p.id === phaseId);
@@ -1762,7 +1852,7 @@ function saveArticle() {
         const quantity = parseFloat(itemEl.querySelector('.item-quantity-input').value);
 
         if (isNaN(rawMaterialId) || isNaN(quantity) || quantity <= 0) {
-            showNotification('Per favore, completa tutte le materie prime della distinta base con valori validi.', 'error');
+            showNotification('Per favor, completa tutte le materie prime della distinta base con valori validi.', 'error');
             return;
         }
         const rawMaterial = appData.rawMaterials.find(rm => rm.id === rawMaterialId);
