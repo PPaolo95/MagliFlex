@@ -23,6 +23,7 @@ let appData = {
     productionPlan: [],
     notifications: [],
     users: [], // New: users data
+    holidays: [], // FIX: Ensure holidays array is initialized
     currentDeliveryWeekStartDate: null,
     currentWorkloadWeekStartDate: null
 };
@@ -84,6 +85,7 @@ function loadData() {
         productionPlan: [],
         notifications: [],
         users: [],
+        holidays: [], // FIX: Ensure holidays array is initialized here
         currentDeliveryWeekStartDate: null,
         currentWorkloadWeekStartDate: null
     };
@@ -800,7 +802,7 @@ function savePhase() {
     const duration = parseFloat(document.getElementById('phaseDurationInput').value);
 
     if (!name || !departmentId || isNaN(duration) || duration <= 0) {
-        showNotification('Per favor, compila tutti i campi correttamente per la fase.', 'error');
+        showNotification('Per favore, compila tutti i campi correttamente per la fase.', 'error');
         return;
     }
 
@@ -2974,24 +2976,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Hide app content until login
     document.getElementById('appContent').style.display = 'none';
-
-    // Set initial week for calendars
-    // These are now handled by loadAndInitializeAppData
-    // renderDeliveryCalendar(appData.currentDeliveryWeekStartDate);
-    // renderWorkloadCalendar(appData.currentWorkloadWeekStartDate);
-
-    // Initial table updates (already called in loadAndInitializeAppData)
-    // updatePhasesTable();
-    // updateMachinesTable();
-    // updateDepartmentsTable();
-    // updateRawMaterialsTable();
-    // updateArticlesTable();
-    // updateProductionLotsTable();
-    // updateHolidaysTable();
-    // updateWarehouseJournalTable();
-    // updateUsersTable();
-    // updateNotificationBadge();
-    // updateDashboardSummary();
 
     console.log("DOMContentLoaded: Caricamento app completato.");
 });
