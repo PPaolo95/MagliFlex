@@ -207,7 +207,7 @@ function loadAndInitializeAppData() {
         appData.currentWorkloadWeekStartDate = getStartOfWeek(new Date()).toISOString().split('T')[0];
     }
 
-    // Update UI elements
+    // Update UI elements - ensure these are called AFTER appData is fully initialized
     updatePhasesTable();
     updateMachinesTable();
     updateDepartmentsTable();
@@ -253,8 +253,16 @@ function showPage(pageId) {
     if (pageId === 'rawMaterialsPage') {
         populateRawMaterialSelects();
     } else if (pageId === 'articlesPage') {
-        populatePhaseSelects(); // For cycle steps
-        populateRawMaterialSelectsForBom(); // For BOM items
+        // When articles page is shown, ensure initial selects are populated if forms are visible
+        // This is primarily for the 'add new article' form, not for dynamic rows
+        const initialPhaseSelect = document.querySelector('#cycleStepsContainer .phase-select');
+        if (initialPhaseSelect) {
+            populatePhaseSelects(initialPhaseSelect);
+        }
+        const initialRawMaterialSelect = document.querySelector('#bomItemsContainer .raw-material-select');
+        if (initialRawMaterialSelect) {
+            populateRawMaterialSelectsForBomItem(initialRawMaterialSelect);
+        }
     } else if (pageId === 'phasesPage') {
         populateDepartmentSelects(); // For phase department
     } else if (pageId === 'machinesPage') {
@@ -1030,20 +1038,25 @@ function populateDepartmentSelects() {
     const machineDepartmentSelect = document.getElementById('machineDepartmentSelect');
 
     // Clear existing options, keep the default "Select a department"
-    phaseDepartmentSelect.innerHTML = '<option value="">Seleziona un reparto</option>';
-    machineDepartmentSelect.innerHTML = '<option value="">Seleziona un reparto</option>';
+    if (phaseDepartmentSelect) {
+        phaseDepartmentSelect.innerHTML = '<option value="">Seleziona un reparto</option>';
+        appData.departments.forEach(dept => {
+            const option1 = document.createElement('option');
+            option1.value = dept.id;
+            option1.textContent = dept.name;
+            phaseDepartmentSelect.appendChild(option1);
+        });
+    }
 
-    appData.departments.forEach(dept => {
-        const option1 = document.createElement('option');
-        option1.value = dept.id;
-        option1.textContent = dept.name;
-        phaseDepartmentSelect.appendChild(option1);
-
-        const option2 = document.createElement('option');
-        option2.value = dept.id;
-        option2.textContent = dept.name;
-        machineDepartmentSelect.appendChild(option2);
-    });
+    if (machineDepartmentSelect) {
+        machineDepartmentSelect.innerHTML = '<option value="">Seleziona un reparto</option>';
+        appData.departments.forEach(dept => {
+            const option2 = document.createElement('option');
+            option2.value = dept.id;
+            option2.textContent = dept.name;
+            machineDepartmentSelect.appendChild(option2);
+        });
+    }
 }
 
 
@@ -1637,14 +1650,15 @@ function deleteJournalEntry(entryId) {
 function populateRawMaterialSelects() {
     const stockRawMaterialSelect = document.getElementById('stockRawMaterialSelect');
     // Clear existing options, keep the default "Select raw material"
-    stockRawMaterialSelect.innerHTML = '<option value="">Seleziona materia prima</option>';
-
-    appData.rawMaterials.forEach(rm => {
-        const option = document.createElement('option');
-        option.value = rm.id;
-        option.textContent = rm.name;
-        stockRawMaterialSelect.appendChild(option);
-    });
+    if (stockRawMaterialSelect) {
+        stockRawMaterialSelect.innerHTML = '<option value="">Seleziona materia prima</option>';
+        appData.rawMaterials.forEach(rm => {
+            const option = document.createElement('option');
+            option.value = rm.id;
+            option.textContent = rm.name;
+            stockRawMaterialSelect.appendChild(option);
+        });
+    }
 }
 
 /**
@@ -1697,11 +1711,16 @@ function addCycleStep(phaseId = '', duration = '') {
 
     // Populate phase select for the new row
     const phaseSelect = stepDiv.querySelector('.phase-select');
-    populatePhaseSelects(phaseSelect, phaseId);
+    if (phaseSelect) { // Ensure select element exists before populating
+        populatePhaseSelects(phaseSelect, phaseId);
+    }
 
     // Set duration if provided (for editing)
     if (duration !== '') {
-        stepDiv.querySelector('.step-duration-input').value = duration;
+        const durationInput = stepDiv.querySelector('.step-duration-input');
+        if (durationInput) {
+            durationInput.value = duration;
+        }
     }
 }
 
@@ -1711,6 +1730,10 @@ function addCycleStep(phaseId = '', duration = '') {
  * @param {number} selectedPhaseId The ID of the phase to pre-select.
  */
 function populatePhaseSelects(selectElement, selectedPhaseId = null) {
+    if (!selectElement) {
+        console.error("populatePhaseSelects: selectElement is null or undefined.");
+        return;
+    }
     selectElement.innerHTML = '<option value="">Seleziona fase</option>';
     appData.phases.forEach(phase => {
         const option = document.createElement('option');
@@ -1763,11 +1786,16 @@ function addBomItem(rawMaterialId = '', quantity = '') {
 
     // Populate raw material select for the new row
     const rawMaterialSelect = itemDiv.querySelector('.raw-material-select');
-    populateRawMaterialSelectsForBomItem(rawMaterialSelect, rawMaterialId);
+    if (rawMaterialSelect) { // Ensure select element exists before populating
+        populateRawMaterialSelectsForBomItem(rawMaterialSelect, rawMaterialId);
+    }
 
     // Set quantity if provided (for editing)
     if (quantity !== '') {
-        itemDiv.querySelector('.item-quantity-input').value = quantity;
+        const quantityInput = itemDiv.querySelector('.item-quantity-input');
+        if (quantityInput) {
+            quantityInput.value = quantity;
+        }
     }
 }
 
@@ -1777,6 +1805,10 @@ function addBomItem(rawMaterialId = '', quantity = '') {
  * @param {number} selectedRawMaterialId The ID of the raw material to pre-select.
  */
 function populateRawMaterialSelectsForBomItem(selectElement, selectedRawMaterialId = null) {
+    if (!selectElement) {
+        console.error("populateRawMaterialSelectsForBomItem: selectElement is null or undefined.");
+        return;
+    }
     selectElement.innerHTML = '<option value="">Seleziona materia prima</option>';
     appData.rawMaterials.forEach(rm => {
         const option = document.createElement('option');
@@ -2014,14 +2046,16 @@ function updateArticlesTable() {
  */
 function populatePlanningArticleSelect() {
     const selectElement = document.getElementById('planningArticleSelect');
-    selectElement.innerHTML = '<option value="">Seleziona un articolo</option>'; // Clear existing options
+    if (selectElement) {
+        selectElement.innerHTML = '<option value="">Seleziona un articolo</option>'; // Clear existing options
 
-    appData.articles.forEach(article => {
-        const option = document.createElement('option');
-        option.value = article.id;
-        option.textContent = article.name;
-        selectElement.appendChild(option);
-    });
+        appData.articles.forEach(article => {
+            const option = document.createElement('option');
+            option.value = article.id;
+            option.textContent = article.name;
+            selectElement.appendChild(option);
+        });
+    }
 
     const editPlanningArticleSelect = document.getElementById('editPlanningArticleSelect');
     if (editPlanningArticleSelect) { // Check if it exists (only in modal)
@@ -2487,11 +2521,26 @@ function openEditPlanningLotModal(lotId) {
     currentEditingId.planning = lotId;
 
     // Populate the modal form
-    document.getElementById('editPlanningArticleSelect').value = lot.articleId;
-    document.getElementById('editPlanningQuantityInput').value = lot.quantity;
-    document.getElementById('editPlanningPrioritySelect').value = lot.priority;
-    document.getElementById('editPlanningTypeSelect').value = lot.type;
-    document.getElementById('editPlanningDeliveryDateInput').value = lot.deliveryDate;
+    const editPlanningArticleSelect = document.getElementById('editPlanningArticleSelect');
+    if (editPlanningArticleSelect) { // Ensure element exists
+        editPlanningArticleSelect.value = lot.articleId;
+    }
+    const editPlanningQuantityInput = document.getElementById('editPlanningQuantityInput');
+    if (editPlanningQuantityInput) {
+        editPlanningQuantityInput.value = lot.quantity;
+    }
+    const editPlanningPrioritySelect = document.getElementById('editPlanningPrioritySelect');
+    if (editPlanningPrioritySelect) {
+        editPlanningPrioritySelect.value = lot.priority;
+    }
+    const editPlanningTypeSelect = document.getElementById('editPlanningTypeSelect');
+    if (editPlanningTypeSelect) {
+        editPlanningTypeSelect.value = lot.type;
+    }
+    const editPlanningDeliveryDateInput = document.getElementById('editPlanningDeliveryDateInput');
+    if (editPlanningDeliveryDateInput) {
+        editPlanningDeliveryDateInput.value = lot.deliveryDate;
+    }
 
     document.getElementById('editPlanningLotModal').classList.add('show');
 }
@@ -2644,14 +2693,19 @@ function getStartOfWeek(date) {
  */
 function renderDeliveryCalendar(startDateString) {
     const calendarGrid = document.getElementById('deliveryCalendarGrid');
+    if (!calendarGrid) return; // Exit if element not found
     calendarGrid.innerHTML = ''; // Clear existing days
 
     const startDate = new Date(startDateString);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 6); // End of the week
 
-    document.getElementById('currentDeliveryWeekDisplay').textContent =
-        `${startDate.toLocaleDateString('it-IT')} - ${endDate.toLocaleDateString('it-IT')}`;
+    const currentDeliveryWeekDisplay = document.getElementById('currentDeliveryWeekDisplay');
+    if (currentDeliveryWeekDisplay) {
+        currentDeliveryWeekDisplay.textContent =
+            `${startDate.toLocaleDateString('it-IT')} - ${endDate.toLocaleDateString('it-IT')}`;
+    }
+
 
     for (let i = 0; i < 7; i++) {
         const currentDay = new Date(startDate);
@@ -2711,14 +2765,19 @@ function renderDeliveryCalendar(startDateString) {
  */
 function renderWorkloadCalendar(startDateString) {
     const calendarGrid = document.getElementById('workloadCalendarGrid');
+    if (!calendarGrid) return; // Exit if element not found
     calendarGrid.innerHTML = ''; // Clear existing days
 
     const startDate = new Date(startDateString);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 6); // End of the week
 
-    document.getElementById('currentWorkloadWeekDisplay').textContent =
-        `${startDate.toLocaleDateString('it-IT')} - ${endDate.toLocaleDateString('it-IT')}`;
+    const currentWorkloadWeekDisplay = document.getElementById('currentWorkloadWeekDisplay');
+    if (currentWorkloadWeekDisplay) {
+        currentWorkloadWeekDisplay.textContent =
+            `${startDate.toLocaleDateString('it-IT')} - ${endDate.toLocaleDateString('it-IT')}`;
+    }
+
 
     for (let i = 0; i < 7; i++) {
         const currentDay = new Date(startDate);
@@ -2917,6 +2976,7 @@ function deleteHoliday(holidayId) {
  */
 function updateHolidaysTable() {
     const tableBody = document.getElementById('holidaysTableBody');
+    if (!tableBody) return; // Exit if element not found
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.holidays.length === 0) {
@@ -2949,93 +3009,107 @@ function updateHolidaysTable() {
  */
 function updateDashboardSummary() {
     // General Counts
-    document.getElementById('dashboardArticlesCount').textContent = appData.articles.length;
-    document.getElementById('dashboardPhasesCount').textContent = appData.phases.length;
-    document.getElementById('dashboardMachinesCount').textContent = appData.machines.length;
-    document.getElementById('dashboardPendingLotsCount').textContent = appData.productionPlan.filter(l => l.status === 'pending' && l.type === 'production').length;
-    document.getElementById('dashboardPendingSamplesCount').textContent = appData.productionPlan.filter(l => l.status === 'pending' && l.type === 'sample').length;
-    document.getElementById('dashboardRawMaterialsCount').textContent = appData.rawMaterials.length;
+    const dashboardArticlesCount = document.getElementById('dashboardArticlesCount');
+    if (dashboardArticlesCount) dashboardArticlesCount.textContent = appData.articles.length;
+    const dashboardPhasesCount = document.getElementById('dashboardPhasesCount');
+    if (dashboardPhasesCount) dashboardPhasesCount.textContent = appData.phases.length;
+    const dashboardMachinesCount = document.getElementById('dashboardMachinesCount');
+    if (dashboardMachinesCount) dashboardMachinesCount.textContent = appData.machines.length;
+    const dashboardPendingLotsCount = document.getElementById('dashboardPendingLotsCount');
+    if (dashboardPendingLotsCount) dashboardPendingLotsCount.textContent = appData.productionPlan.filter(l => l.status === 'pending' && l.type === 'production').length;
+    const dashboardPendingSamplesCount = document.getElementById('dashboardPendingSamplesCount');
+    if (dashboardPendingSamplesCount) dashboardPendingSamplesCount.textContent = appData.productionPlan.filter(l => l.status === 'pending' && l.type === 'sample').length;
+    const dashboardRawMaterialsCount = document.getElementById('dashboardRawMaterialsCount');
+    if (dashboardRawMaterialsCount) dashboardRawMaterialsCount.textContent = appData.rawMaterials.length;
 
     // Raw Materials Summary
     const rawMaterialsSummaryUl = document.getElementById('dashboardRawMaterialsSummary');
-    rawMaterialsSummaryUl.innerHTML = '';
-    if (appData.rawMaterials.length === 0) {
-        rawMaterialsSummaryUl.innerHTML = '<p style="text-align: center; color: #888;">Nessuna materia prima registrata.</p>';
-    } else {
-        appData.rawMaterials.forEach(rm => {
-            const li = document.createElement('li');
-            li.textContent = `${rm.name}: ${rm.currentStock} ${rm.unit}`;
-            rawMaterialsSummaryUl.appendChild(li);
-        });
+    if (rawMaterialsSummaryUl) {
+        rawMaterialsSummaryUl.innerHTML = '';
+        if (appData.rawMaterials.length === 0) {
+            rawMaterialsSummaryUl.innerHTML = '<p style="text-align: center; color: #888;">Nessuna materia prima registrata.</p>';
+        } else {
+            appData.rawMaterials.forEach(rm => {
+                const li = document.createElement('li');
+                li.textContent = `${rm.name}: ${rm.currentStock} ${rm.unit}`;
+                rawMaterialsSummaryUl.appendChild(li);
+            });
+        }
     }
+
 
     // Machine Usage (simplified for dashboard)
     const machineUsageDiv = document.getElementById('dashboardMachineUsage');
-    machineUsageDiv.innerHTML = '';
-    if (appData.machines.length === 0) {
-        machineUsageDiv.innerHTML = '<p style="text-align: center; color: #888;">Nessun macchinario registrato o dati di utilizzo.</p>';
-    } else {
-        appData.machines.forEach(machine => {
-            // Calculate a very simplified "usage" based on pending lots assigned to its department
-            let totalAssignedHours = 0;
-            appData.productionPlan.filter(lot => lot.status === 'pending').forEach(lot => {
-                lot.workloadDetails.forEach(detail => {
-                    const department = appData.departments.find(d => d.name === detail.departmentName);
-                    if (department && department.id === machine.departmentId) {
-                        totalAssignedHours += detail.totalHours;
-                    }
+    if (machineUsageDiv) {
+        machineUsageDiv.innerHTML = '';
+        if (appData.machines.length === 0) {
+            machineUsageDiv.innerHTML = '<p style="text-align: center; color: #888;">Nessun macchinario registrato o dati di utilizzo.</p>';
+        } else {
+            appData.machines.forEach(machine => {
+                // Calculate a very simplified "usage" based on pending lots assigned to its department
+                let totalAssignedHours = 0;
+                appData.productionPlan.filter(lot => lot.status === 'pending').forEach(lot => {
+                    lot.workloadDetails.forEach(detail => {
+                        const department = appData.departments.find(d => d.name === detail.departmentName);
+                        if (department && department.id === machine.departmentId) {
+                            totalAssignedHours += detail.totalHours;
+                        }
+                    });
                 });
+
+                // Assuming a standard working period, e.g., 160 hours/month per machine
+                const maxCapacityHours = machine.capacity * 8 * 20; // Example: daily capacity * 20 working days/month
+                const usagePercentage = maxCapacityHours > 0 ? (totalAssignedHours / maxCapacityHours) * 100 : 0;
+
+                const machineDiv = document.createElement('div');
+                machineDiv.innerHTML = `
+                    <p>${machine.name} (${machine.departmentName}): ${usagePercentage.toFixed(1)}% (Carico: ${totalAssignedHours.toFixed(0)} pz / Capacità giornaliera: ${machine.capacity * 8} pz)</p>
+                    <div class="machine-usage">
+                        <div class="machine-usage-bar" style="width: ${Math.min(usagePercentage, 100)}%;"></div>
+                    </div>
+                `;
+                machineUsageDiv.appendChild(machineDiv);
             });
-
-            // Assuming a standard working period, e.g., 160 hours/month per machine
-            const maxCapacityHours = machine.capacity * 8 * 20; // Example: daily capacity * 20 working days/month
-            const usagePercentage = maxCapacityHours > 0 ? (totalAssignedHours / maxCapacityHours) * 100 : 0;
-
-            const machineDiv = document.createElement('div');
-            machineDiv.innerHTML = `
-                <p>${machine.name} (${machine.departmentName}): ${usagePercentage.toFixed(1)}% (Carico: ${totalAssignedHours.toFixed(0)} pz / Capacità giornaliera: ${machine.capacity * 8} pz)</p>
-                <div class="machine-usage">
-                    <div class="machine-usage-bar" style="width: ${Math.min(usagePercentage, 100)}%;"></div>
-                </div>
-            `;
-            machineUsageDiv.appendChild(machineDiv);
-        });
+        }
     }
+
 
     // Workload per Department (Current Week)
     const departmentWorkloadDiv = document.getElementById('dashboardDepartmentWorkload');
-    departmentWorkloadDiv.innerHTML = '';
-    const currentWeekWorkload = {}; // { departmentName: totalHours }
+    if (departmentWorkloadDiv) {
+        departmentWorkloadDiv.innerHTML = '';
+        const currentWeekWorkload = {}; // { departmentName: totalHours }
 
-    const startOfCurrentWeek = getStartOfWeek(new Date());
-    const endOfCurrentWeek = new Date(startOfCurrentWeek);
-    endOfCurrentWeek.setDate(endOfCurrentWeek.getDate() + 6);
+        const startOfCurrentWeek = getStartOfWeek(new Date());
+        const endOfCurrentWeek = new Date(startOfCurrentWeek);
+        endOfCurrentWeek.setDate(endOfCurrentWeek.getDate() + 6);
 
-    appData.productionPlan.filter(lot => lot.status === 'pending').forEach(lot => {
-        const lotStartDate = new Date(lot.suggestedStartDate);
-        const lotEndDate = new Date(lot.suggestedEndDate);
+        appData.productionPlan.filter(lot => lot.status === 'pending').forEach(lot => {
+            const lotStartDate = new Date(lot.suggestedStartDate);
+            const lotEndDate = new Date(lot.suggestedEndDate);
 
-        // Consider only lots that overlap with the current week
-        if ((lotStartDate <= endOfCurrentWeek && lotEndDate >= startOfCurrentWeek) ||
-            (lotStartDate >= startOfCurrentWeek && lotStartDate <= endOfCurrentWeek)) {
+            // Consider only lots that overlap with the current week
+            if ((lotStartDate <= endOfCurrentWeek && lotEndDate >= startOfCurrentWeek) ||
+                (lotStartDate >= startOfCurrentWeek && lotStartDate <= endOfCurrentWeek)) {
 
-            lot.workloadDetails.forEach(detail => {
-                if (!currentWeekWorkload[detail.departmentName]) {
-                    currentWeekWorkload[detail.departmentName] = 0;
-                }
-                // For dashboard, sum up total workload for overlapping lots
-                currentWeekWorkload[detail.departmentName] += detail.totalHours;
-            });
-        }
-    });
+                lot.workloadDetails.forEach(detail => {
+                    if (!currentWeekWorkload[detail.departmentName]) {
+                        currentWeekWorkload[detail.departmentName] = 0;
+                    }
+                    // For dashboard, sum up total workload for overlapping lots
+                    currentWeekWorkload[detail.departmentName] += detail.totalHours;
+                });
+            }
+        });
 
-    if (Object.keys(currentWeekWorkload).length === 0) {
-        departmentWorkloadDiv.innerHTML = '<p style="text-align: center; color: #888;">Nessun dato di workload per la settimana corrente.</p>';
-    } else {
-        for (const deptName in currentWeekWorkload) {
-            const p = document.createElement('p');
-            p.textContent = `${deptName}: ${currentWeekWorkload[deptName].toFixed(2)} ore`;
-            departmentWorkloadDiv.appendChild(p);
+        if (Object.keys(currentWeekWorkload).length === 0) {
+            departmentWorkloadDiv.innerHTML = '<p style="text-align: center; color: #888;">Nessun dato di workload per la settimana corrente.</p>';
+        } else {
+            for (const deptName in currentWeekWorkload) {
+                const p = document.createElement('p');
+                p.textContent = `${deptName}: ${currentWeekWorkload[deptName].toFixed(2)} ore`;
+                departmentWorkloadDiv.appendChild(p);
+            }
         }
     }
 }
