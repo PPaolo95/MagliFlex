@@ -105,79 +105,267 @@ function loadAndInitializeAppData() {
         console.log("Inizializzazione con dati di esempio.");
         appData = {
             phases: [
-                { id: 1, name: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 2.5 },
-                { id: 2, name: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 1.0 },
-                { id: 3, name: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.5 },
-                { id: 4, name: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 1.5 },
-                { id: 5, name: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.2 }
+                { id: 101, name: 'Tessitura', departmentId: 1, departmentName: 'Reparto Tessitura', duration: 2.5 },
+                { id: 102, name: 'Tintura', departmentId: 2, departmentName: 'Reparto Tintoria', duration: 1.0 },
+                { id: 103, name: 'Taglio', departmentId: 3, departmentName: 'Reparto Taglio', duration: 0.5 },
+                { id: 104, name: 'Cucito', departmentId: 4, departmentName: 'Reparto Cucito', duration: 1.5 },
+                { id: 105, name: 'Controllo Qualità', departmentId: 5, departmentName: 'Reparto Controllo Qualità', duration: 0.2 },
+                { id: 106, name: 'Stampa Digitale', departmentId: 6, departmentName: 'Reparto Stampa', duration: 0.8 },
+                { id: 107, name: 'Ricamo', departmentId: 4, departmentName: 'Reparto Cucito', duration: 0.3 }
             ],
             machines: [
-                { id: 201, name: 'Telaio A', departmentId: 101, departmentName: 'Reparto Tessitura', capacity: 100 },
-                { id: 202, name: 'Tintore Grande', departmentId: 102, departmentName: 'Reparto Tintoria', capacity: 500 },
-                { id: 203, name: 'Taglierina Laser', departmentId: 103, departmentName: 'Reparto Taglio', capacity: 200 }
+                { id: 201, name: 'Telaio Rapido X1', departmentId: 1, departmentName: 'Reparto Tessitura', capacity: 150 },
+                { id: 202, name: 'Telaio Standard Y2', departmentId: 1, departmentName: 'Reparto Tessitura', capacity: 100 },
+                { id: 203, name: 'Tintore a Ciclo Continuo', departmentId: 2, departmentName: 'Reparto Tintoria', capacity: 600 },
+                { id: 204, name: 'Tintore a Lotti Piccolo', departmentId: 2, departmentName: 'Reparto Tintoria', capacity: 200 },
+                { id: 205, name: 'Taglierina Automatica Z3', departmentId: 3, departmentName: 'Reparto Taglio', capacity: 250 },
+                { id: 206, name: 'Macchina Cucito Industriale A', departmentId: 4, departmentName: 'Reparto Cucito', capacity: 120 },
+                { id: 207, name: 'Macchina Cucito Industriale B', departmentId: 4, departmentName: 'Reparto Cucito', capacity: 120 },
+                { id: 208, name: 'Stampante Tessuti Grande Formato', departmentId: 6, departmentName: 'Reparto Stampa', capacity: 80 },
+                { id: 209, name: 'Ricamatrice Multi-testa', departmentId: 4, departmentName: 'Reparto Cucito', capacity: 50 }
             ],
             departments: [
-                { id: 101, name: 'Reparto Tessitura', description: 'Produzione tessuti' },
-                { id: 102, name: 'Reparto Tintoria', description: 'Tintura e finissaggio' },
-                { id: 103, name: 'Reparto Taglio', description: 'Taglio dei tessuti' },
-                { id: 104, name: 'Reparto Cucito', description: 'Assemblaggio capi' },
-                { id: 105, name: 'Reparto Controllo Qualità', description: 'Ispezione finale' }
+                { id: 1, name: 'Reparto Tessitura', description: 'Produzione di tessuti grezzi' },
+                { id: 2, name: 'Reparto Tintoria', description: 'Tintura e finissaggio dei tessuti' },
+                { id: 3, name: 'Reparto Taglio', description: 'Taglio di precisione dei tessuti' },
+                { id: 4, name: 'Reparto Cucito', description: 'Assemblaggio e confezionamento capi' },
+                { id: 5, name: 'Reparto Controllo Qualità', description: 'Ispezione finale dei prodotti' },
+                { id: 6, name: 'Reparto Stampa', description: 'Stampa digitale su tessuti' },
+                { id: 7, name: 'Magazzino Materie Prime', description: 'Gestione stock di materie prime' },
+                { id: 8, name: 'Magazzino Prodotti Finiti', description: 'Gestione stock di prodotti finiti' }
             ],
             rawMaterials: [
-                { id: 301, name: 'Filato di Cotone', unit: 'kg', currentStock: 1500 },
-                { id: 302, name: 'Filato di Poliestere', unit: 'kg', currentStock: 800 },
-                { id: 303, name: 'Colorante Blu', unit: 'litri', currentStock: 200 }
+                { id: 301, name: 'Filato di Cotone Biologico', unit: 'kg', currentStock: 2500 },
+                { id: 302, name: 'Filato di Poliestere Riciclato', unit: 'kg', currentStock: 1200 },
+                { id: 303, name: 'Colorante Rosso Azo-Free', unit: 'litri', currentStock: 300 },
+                { id: 304, name: 'Colorante Blu Indaco', unit: 'litri', currentStock: 150 },
+                { id: 305, name: 'Etichette Tessute', unit: 'pezzi', currentStock: 10000 },
+                { id: 306, name: 'Bottoni in Legno', unit: 'pezzi', currentStock: 5000 },
+                { id: 307, name: 'Cerniere Zip Metallo', unit: 'pezzi', currentStock: 3000 },
+                { id: 308, name: 'Inchiostro Stampa Tessile Nero', unit: 'litri', currentStock: 50 }
             ],
             warehouseJournal: [],
             articles: [
                 {
                     id: 401,
-                    name: 'T-shirt Basic',
-                    description: 'Maglietta girocollo in cotone',
+                    name: 'T-shirt Classica Uomo',
+                    description: 'Maglietta girocollo in cotone biologico 180g/mq',
                     cycle: [
-                        { phaseId: 1, phaseName: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 0.1 },
-                        { phaseId: 2, phaseName: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 0.05 },
-                        { phaseId: 3, phaseName: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.02 },
-                        { phaseId: 4, phaseName: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 0.08 },
-                        { phaseId: 5, phaseName: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
+                        { phaseId: 101, phaseName: 'Tessitura', departmentId: 1, departmentName: 'Reparto Tessitura', duration: 0.15 },
+                        { phaseId: 102, phaseName: 'Tintura', departmentId: 2, departmentName: 'Reparto Tintoria', duration: 0.08 },
+                        { phaseId: 103, phaseName: 'Taglio', departmentId: 3, departmentName: 'Reparto Taglio', duration: 0.03 },
+                        { phaseId: 104, phaseName: 'Cucito', departmentId: 4, departmentName: 'Reparto Cucito', duration: 0.12 },
+                        { phaseId: 105, phaseName: 'Controllo Qualità', departmentId: 5, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
                     ],
                     bom: [
-                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone', unit: 'kg', quantity: 0.2 },
-                        { rawMaterialId: 303, rawMaterialName: 'Colorante Blu', unit: 'litri', quantity: 0.01 }
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', unit: 'kg', quantity: 0.25 },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', unit: 'litri', quantity: 0.015 },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', unit: 'pezzi', quantity: 1 }
                     ]
                 },
                 {
                     id: 402,
-                    name: 'Pantalone Sportivo',
-                    description: 'Pantalone in poliestere per attività sportiva',
+                    name: 'Felpa con Cappuccio Unisex',
+                    description: 'Felpa in poliestere riciclato con interno felpato',
                     cycle: [
-                        { phaseId: 1, phaseName: 'Tessitura', departmentId: 101, departmentName: 'Reparto Tessitura', duration: 0.2 },
-                        { phaseId: 2, phaseName: 'Tintura', departmentId: 102, departmentName: 'Reparto Tintoria', duration: 0.08 },
-                        { phaseId: 3, phaseName: 'Taglio', departmentId: 103, departmentName: 'Reparto Taglio', duration: 0.03 },
-                        { phaseId: 4, phaseName: 'Cucito', departmentId: 104, departmentName: 'Reparto Cucito', duration: 0.15 },
-                        { phaseId: 5, phaseName: 'Controllo Qualità', departmentId: 105, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
+                        { phaseId: 101, phaseName: 'Tessitura', departmentId: 1, departmentName: 'Reparto Tessitura', duration: 0.3 },
+                        { phaseId: 102, phaseName: 'Tintura', departmentId: 2, departmentName: 'Reparto Tintoria', duration: 0.15 },
+                        { phaseId: 103, phaseName: 'Taglio', departmentId: 3, departmentName: 'Reparto Taglio', duration: 0.05 },
+                        { phaseId: 104, phaseName: 'Cucito', departmentId: 4, departmentName: 'Reparto Cucito', duration: 0.25 },
+                        { phaseId: 105, phaseName: 'Controllo Qualità', departmentId: 5, departmentName: 'Reparto Controllo Qualità', duration: 0.02 }
                     ],
                     bom: [
-                        { rawMaterialId: 302, rawMaterialName: 'Filato di Poliestere', unit: 'kg', quantity: 0.3 },
-                        { rawMaterialId: 303, rawMaterialName: 'Colorante Blu', unit: 'litri', quantity: 0.02 }
+                        { rawMaterialId: 302, rawMaterialName: 'Filato di Poliestere Riciclato', unit: 'kg', quantity: 0.5 },
+                        { rawMaterialId: 304, rawMaterialName: 'Colorante Blu Indaco', unit: 'litri', quantity: 0.03 },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', unit: 'pezzi', quantity: 1 }
+                    ]
+                },
+                {
+                    id: 403,
+                    name: 'Polo Piqué',
+                    description: 'Polo in cotone piqué con colletto e bottoni',
+                    cycle: [
+                        { phaseId: 101, phaseName: 'Tessitura', departmentId: 1, departmentName: 'Reparto Tessitura', duration: 0.2 },
+                        { phaseId: 102, phaseName: 'Tintura', departmentId: 2, departmentName: 'Reparto Tintoria', duration: 0.1 },
+                        { phaseId: 103, phaseName: 'Taglio', departmentId: 3, departmentName: 'Reparto Taglio', duration: 0.04 },
+                        { phaseId: 104, phaseName: 'Cucito', departmentId: 4, departmentName: 'Reparto Cucito', duration: 0.18 },
+                        { phaseId: 105, phaseName: 'Controllo Qualità', departmentId: 5, departmentName: 'Reparto Controllo Qualità', duration: 0.015 }
+                    ],
+                    bom: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', unit: 'kg', quantity: 0.3 },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', unit: 'litri', quantity: 0.02 },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', unit: 'pezzi', quantity: 1 },
+                        { rawMaterialId: 306, rawMaterialName: 'Bottoni in Legno', unit: 'pezzi', quantity: 2 }
+                    ]
+                },
+                {
+                    id: 404,
+                    name: 'T-shirt Stampa Personalizzata',
+                    description: 'T-shirt in cotone con stampa digitale fronte/retro',
+                    cycle: [
+                        { phaseId: 101, phaseName: 'Tessitura', departmentId: 1, departmentName: 'Reparto Tessitura', duration: 0.15 },
+                        { phaseId: 102, phaseName: 'Tintura', departmentId: 2, departmentName: 'Reparto Tintoria', duration: 0.08 },
+                        { phaseId: 106, phaseName: 'Stampa Digitale', departmentId: 6, departmentName: 'Reparto Stampa', duration: 0.05 },
+                        { phaseId: 103, phaseName: 'Taglio', departmentId: 3, departmentName: 'Reparto Taglio', duration: 0.03 },
+                        { phaseId: 104, phaseName: 'Cucito', departmentId: 4, departmentName: 'Reparto Cucito', duration: 0.12 },
+                        { phaseId: 105, phaseName: 'Controllo Qualità', departmentId: 5, departmentName: 'Reparto Controllo Qualità', duration: 0.01 }
+                    ],
+                    bom: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', unit: 'kg', quantity: 0.25 },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', unit: 'litri', quantity: 0.015 },
+                        { rawMaterialId: 308, rawMaterialName: 'Inchiostro Stampa Tessile Nero', unit: 'litri', quantity: 0.005 },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', unit: 'pezzi', quantity: 1 }
                     ]
                 }
             ],
-            productionPlan: [],
+            productionPlan: [
+                // Example production lots
+                {
+                    id: 501,
+                    articleId: 401,
+                    articleName: 'T-shirt Classica Uomo',
+                    quantity: 500,
+                    priority: 'high',
+                    type: 'production',
+                    deliveryDate: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0], // 10 days from now
+                    suggestedStartDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0],
+                    suggestedEndDate: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0],
+                    totalWorkingDays: 5,
+                    workloadDetails: [
+                        { departmentName: 'Reparto Tessitura', totalHours: 75 },
+                        { departmentName: 'Reparto Tintoria', totalHours: 40 },
+                        { departmentName: 'Reparto Taglio', totalHours: 15 },
+                        { departmentName: 'Reparto Cucito', totalHours: 60 },
+                        { departmentName: 'Reparto Controllo Qualità', totalHours: 5 }
+                    ],
+                    materialsNeeded: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', totalQuantity: 125, unit: 'kg' },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', totalQuantity: 7.5, unit: 'litri' },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', totalQuantity: 500, unit: 'pezzi' }
+                    ],
+                    status: 'pending'
+                },
+                {
+                    id: 502,
+                    articleId: 402,
+                    articleName: 'Felpa con Cappuccio Unisex',
+                    quantity: 200,
+                    priority: 'medium',
+                    type: 'production',
+                    deliveryDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // 15 days from now
+                    suggestedStartDate: new Date(new Date().setDate(new Date().getDate() + 8)).toISOString().split('T')[0],
+                    suggestedEndDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0],
+                    totalWorkingDays: 7,
+                    workloadDetails: [
+                        { departmentName: 'Reparto Tessitura', totalHours: 60 },
+                        { departmentName: 'Reparto Tintoria', totalHours: 30 },
+                        { departmentName: 'Reparto Taglio', totalHours: 10 },
+                        { departmentName: 'Reparto Cucito', totalHours: 50 },
+                        { departmentName: 'Reparto Controllo Qualità', totalHours: 4 }
+                    ],
+                    materialsNeeded: [
+                        { rawMaterialId: 302, rawMaterialName: 'Filato di Poliestere Riciclato', totalQuantity: 100, unit: 'kg' },
+                        { rawMaterialId: 304, rawMaterialName: 'Colorante Blu Indaco', totalQuantity: 6, unit: 'litri' },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', totalQuantity: 200, unit: 'pezzi' }
+                    ],
+                    status: 'pending'
+                },
+                {
+                    id: 503,
+                    articleId: 401,
+                    articleName: 'T-shirt Classica Uomo',
+                    quantity: 10,
+                    priority: 'low',
+                    type: 'sample',
+                    deliveryDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0], // 5 days from now
+                    suggestedStartDate: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().split('T')[0],
+                    suggestedEndDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0],
+                    totalWorkingDays: 2,
+                    workloadDetails: [
+                        { departmentName: 'Reparto Tessitura', totalHours: 1.5 },
+                        { departmentName: 'Reparto Tintoria', totalHours: 0.8 },
+                        { departmentName: 'Reparto Taglio', totalHours: 0.3 },
+                        { departmentName: 'Reparto Cucito', totalHours: 1.2 },
+                        { departmentName: 'Reparto Controllo Qualità', totalHours: 0.1 }
+                    ],
+                    materialsNeeded: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', totalQuantity: 2.5, unit: 'kg' },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', totalQuantity: 0.15, unit: 'litri' },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', totalQuantity: 10, unit: 'pezzi' }
+                    ],
+                    status: 'completed' // Example of a completed sample lot
+                },
+                {
+                    id: 504,
+                    articleId: 404,
+                    articleName: 'T-shirt Stampa Personalizzata',
+                    quantity: 100,
+                    priority: 'high',
+                    type: 'production',
+                    deliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0], // 7 days from now
+                    suggestedStartDate: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0],
+                    suggestedEndDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0],
+                    totalWorkingDays: 5,
+                    workloadDetails: [
+                        { departmentName: 'Reparto Tessitura', totalHours: 15 },
+                        { departmentName: 'Reparto Tintoria', totalHours: 8 },
+                        { departmentName: 'Reparto Stampa', totalHours: 5 },
+                        { departmentName: 'Reparto Taglio', totalHours: 3 },
+                        { departmentName: 'Reparto Cucito', totalHours: 12 },
+                        { departmentName: 'Reparto Controllo Qualità', totalHours: 1 }
+                    ],
+                    materialsNeeded: [
+                        { rawMaterialId: 301, rawMaterialName: 'Filato di Cotone Biologico', totalQuantity: 25, unit: 'kg' },
+                        { rawMaterialId: 303, rawMaterialName: 'Colorante Rosso Azo-Free', totalQuantity: 1.5, unit: 'litri' },
+                        { rawMaterialId: 308, rawMaterialName: 'Inchiostro Stampa Tessile Nero', totalQuantity: 0.5, unit: 'litri' },
+                        { rawMaterialId: 305, rawMaterialName: 'Etichette Tessute', totalQuantity: 100, unit: 'pezzi' }
+                    ],
+                    status: 'pending'
+                }
+            ],
             notifications: [],
             users: [
                 {
-                    id: generateId(),
+                    id: 1,
                     username: 'admin',
-                    password: 'admin', // In a real app, hash this!
+                    password: 'admin',
                     roles: ['admin', 'planner', 'production', 'warehouse'],
+                    forcePasswordChange: false
+                },
+                {
+                    id: 2,
+                    username: 'planner1',
+                    password: 'password',
+                    roles: ['planner'],
+                    forcePasswordChange: false
+                },
+                {
+                    id: 3,
+                    username: 'production1',
+                    password: 'password',
+                    roles: ['production'],
+                    forcePasswordChange: false
+                },
+                {
+                    id: 4,
+                    username: 'warehouse1',
+                    password: 'password',
+                    roles: ['warehouse'],
                     forcePasswordChange: false
                 }
             ],
             holidays: [
-                { id: generateId(), date: '2025-01-01', description: 'Capodanno' },
-                { id: generateId(), date: '2025-04-25', description: 'Festa della Liberazione' },
-                { id: generateId(), date: '2025-05-01', description: 'Festa del Lavoro' }
+                { id: 1, date: '2025-01-01', description: 'Capodanno' },
+                { id: 2, date: '2025-01-06', description: 'Epifania' },
+                { id: 3, date: '2025-04-21', description: 'Pasquetta' },
+                { id: 4, date: '2025-04-25', description: 'Festa della Liberazione' },
+                { id: 5, date: '2025-05-01', description: 'Festa del Lavoro' },
+                { id: 6, date: '2025-06-02', description: 'Festa della Repubblica' },
+                { id: 7, date: '2025-08-15', description: 'Ferragosto' },
+                { id: 8, date: '2025-11-01', description: 'Ognissanti' },
+                { id: 9, date: '2025-12-08', description: 'Immacolata Concezione' },
+                { id: 10, date: '2025-12-25', description: 'Natale' },
+                { id: 11, date: '2025-12-26', description: 'Santo Stefano' }
             ],
             currentDeliveryWeekStartDate: getStartOfWeek(new Date()).toISOString().split('T')[0],
             currentWorkloadWeekStartDate: getStartOfWeek(new Date()).toISOString().split('T')[0]
@@ -188,14 +376,16 @@ function loadAndInitializeAppData() {
     }
 
     // Ensure default admin user exists if it was somehow removed from loaded data
-    if (!appData.users || appData.users.length === 0) {
-        appData.users = [{
+    // This part ensures that even if local storage is cleared or corrupted, an admin user is always available.
+    const adminUserExists = appData.users.some(u => u.username === 'admin');
+    if (!adminUserExists) {
+        appData.users.push({
             id: generateId(),
             username: 'admin',
-            password: 'admin', // In a real app, hash this!
+            password: 'admin',
             roles: ['admin', 'planner', 'production', 'warehouse'],
             forcePasswordChange: false
-        }];
+        });
         saveData();
     }
 
@@ -234,7 +424,11 @@ function showPage(pageId) {
     });
 
     // Show the requested page
-    document.getElementById(pageId).classList.add('active');
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+
 
     // Update active navigation button
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -255,14 +449,9 @@ function showPage(pageId) {
     } else if (pageId === 'articlesPage') {
         // When articles page is shown, ensure initial selects are populated if forms are visible
         // This is primarily for the 'add new article' form, not for dynamic rows
-        const initialPhaseSelect = document.querySelector('#cycleStepsContainer .phase-select');
-        if (initialPhaseSelect) {
-            populatePhaseSelects(initialPhaseSelect);
-        }
-        const initialRawMaterialSelect = document.querySelector('#bomItemsContainer .raw-material-select');
-        if (initialRawMaterialSelect) {
-            populateRawMaterialSelectsForBomItem(initialRawMaterialSelect);
-        }
+        // The resetArticleForm() or editArticle() will handle populating the selects
+        // by calling addCycleStep() and addBomItem() which then call the populate functions.
+        // No direct call needed here.
     } else if (pageId === 'phasesPage') {
         populateDepartmentSelects(); // For phase department
     } else if (pageId === 'machinesPage') {
@@ -285,10 +474,10 @@ function toggleNavMenu() {
     const body = document.body;
     const backdrop = document.querySelector('.menu-backdrop');
 
-    navMenu.classList.toggle('open');
-    hamburgerBtn.classList.toggle('open');
-    body.classList.toggle('nav-open'); // Add/remove class to body to prevent scroll
-    backdrop.classList.toggle('show'); // Show/hide the backdrop
+    if (navMenu) navMenu.classList.toggle('open');
+    if (hamburgerBtn) hamburgerBtn.classList.toggle('open');
+    if (body) body.classList.toggle('nav-open'); // Add/remove class to body to prevent scroll
+    if (backdrop) backdrop.classList.toggle('show'); // Show/hide the backdrop
 }
 
 
@@ -324,6 +513,10 @@ function applyTheme() {
  */
 function showNotification(message, type = 'info') {
     const container = document.getElementById('notificationContainer');
+    if (!container) {
+        console.warn("Notification container not found.");
+        return;
+    }
     const notification = document.createElement('div');
     notification.classList.add('notification-message', type);
     notification.textContent = message;
@@ -368,6 +561,7 @@ function addAppNotification(message, type = 'info', relatedId = null) {
  */
 function updateNotificationBadge() {
     const badge = document.getElementById('notificationBadge');
+    if (!badge) return;
     const unreadCount = appData.notifications.filter(n => !n.read).length;
     if (unreadCount > 0) {
         badge.textContent = unreadCount;
@@ -381,15 +575,21 @@ function updateNotificationBadge() {
  * Opens the notifications modal and displays notifications based on the current filter.
  */
 function openNotificationsModal() {
-    document.getElementById('notificationsModal').classList.add('show');
-    filterNotifications(currentNotificationFilter); // Apply current filter on open
+    const notificationsModal = document.getElementById('notificationsModal');
+    if (notificationsModal) {
+        notificationsModal.classList.add('show');
+        filterNotifications(currentNotificationFilter); // Apply current filter on open
+    }
 }
 
 /**
  * Closes the notifications modal.
  */
 function closeNotificationsModal() {
-    document.getElementById('notificationsModal').classList.remove('show');
+    const notificationsModal = document.getElementById('notificationsModal');
+    if (notificationsModal) {
+        notificationsModal.classList.remove('show');
+    }
 }
 
 /**
@@ -399,6 +599,7 @@ function closeNotificationsModal() {
 function filterNotifications(filter) {
     currentNotificationFilter = filter;
     const notificationsList = document.getElementById('notificationsList');
+    if (!notificationsList) return;
     notificationsList.innerHTML = ''; // Clear current list
 
     const filteredNotifications = appData.notifications.filter(n => {
@@ -427,8 +628,10 @@ function filterNotifications(filter) {
     });
 
     // Update active state of filter buttons
-    document.getElementById('filterUnread').classList.toggle('active', filter === 'unread');
-    document.getElementById('filterAll').classList.toggle('active', filter === 'all');
+    const filterUnreadBtn = document.getElementById('filterUnread');
+    const filterAllBtn = document.getElementById('filterAll');
+    if (filterUnreadBtn) filterUnreadBtn.classList.toggle('active', filter === 'unread');
+    if (filterAllBtn) filterAllBtn.classList.toggle('active', filter === 'all');
 }
 
 /**
@@ -498,15 +701,25 @@ function cancelEdit(sectionKey) {
  * Handles user login.
  */
 function loginUser() {
-    const usernameInput = document.getElementById('usernameInput').value;
-    const passwordInput = document.getElementById('passwordInput').value; // Get password input
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
 
-    const user = appData.users.find(u => normalizeString(u.username) === normalizeString(usernameInput));
+    if (!usernameInput || !passwordInput) {
+        showNotification('Errore: Campi di login non trovati.', 'error');
+        return;
+    }
 
-    if (user && user.password === passwordInput) { // Check password
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+
+    const user = appData.users.find(u => normalizeString(u.username) === normalizeString(username));
+
+    if (user && user.password === password) { // Check password
         currentUser = user;
-        document.getElementById('loginOverlay').classList.remove('show');
-        document.getElementById('appContent').style.display = 'flex';
+        const loginOverlay = document.getElementById('loginOverlay');
+        const appContent = document.getElementById('appContent');
+        if (loginOverlay) loginOverlay.classList.remove('show');
+        if (appContent) appContent.style.display = 'flex';
         updateLoggedInUserDisplay();
         applyTheme(); // Apply theme on successful login
         showPage('dashboardPage'); // Show dashboard after login
@@ -537,10 +750,15 @@ function loginUser() {
  */
 function logoutUser() {
     currentUser = null;
-    document.getElementById('appContent').style.display = 'none';
-    document.getElementById('usernameInput').value = ''; // Clear username
-    document.getElementById('passwordInput').value = ''; // Clear password
-    document.getElementById('loginOverlay').classList.add('show');
+    const appContent = document.getElementById('appContent');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginOverlay = document.getElementById('loginOverlay');
+
+    if (appContent) appContent.style.display = 'none';
+    if (usernameInput) usernameInput.value = ''; // Clear username
+    if (passwordInput) passwordInput.value = ''; // Clear password
+    if (loginOverlay) loginOverlay.classList.add('show');
     showNotification('Disconnessione effettuata.', 'info');
 }
 
@@ -548,15 +766,18 @@ function logoutUser() {
  * Updates the display of the currently logged-in user's username and roles.
  */
 function updateLoggedInUserDisplay() {
-    if (currentUser) {
-        document.getElementById('currentUsernameDisplay').textContent = currentUser.username;
-        document.getElementById('currentUserRoleDisplay').textContent = currentUser.roles.map(role => {
+    const currentUsernameDisplay = document.getElementById('currentUsernameDisplay');
+    const currentUserRoleDisplay = document.getElementById('currentUserRoleDisplay');
+
+    if (currentUser && currentUsernameDisplay && currentUserRoleDisplay) {
+        currentUsernameDisplay.textContent = currentUser.username;
+        currentUserRoleDisplay.textContent = currentUser.roles.map(role => {
             // Capitalize first letter for display
             return role.charAt(0).toUpperCase() + role.slice(1);
         }).join(', ');
-    } else {
-        document.getElementById('currentUsernameDisplay').textContent = 'N/A';
-        document.getElementById('currentUserRoleDisplay').textContent = 'N/A';
+    } else if (currentUsernameDisplay && currentUserRoleDisplay) {
+        currentUsernameDisplay.textContent = 'N/A';
+        currentUserRoleDisplay.textContent = 'N/A';
     }
 }
 
@@ -628,23 +849,33 @@ function showMessageBox(title, message, type = 'alert', onConfirm = null, onCanc
 
     // Add event listeners
     if (type === 'confirm' || type === 'passwordChangePrompt') {
-        document.getElementById('messageBoxConfirmBtn').onclick = () => {
-            modal.classList.remove('show');
-            if (onConfirm) onConfirm();
-            modal.remove();
-        };
-        if (type === 'confirm') {
-            document.getElementById('messageBoxCancelBtn').onclick = () => {
+        const confirmBtn = document.getElementById('messageBoxConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
                 modal.classList.remove('show');
-                if (onCancel) onCancel();
+                if (onConfirm) onConfirm();
                 modal.remove();
             };
         }
+
+        if (type === 'confirm') {
+            const cancelBtn = document.getElementById('messageBoxCancelBtn');
+            if (cancelBtn) {
+                cancelBtn.onclick = () => {
+                    modal.classList.remove('show');
+                    if (onCancel) onCancel();
+                    modal.remove();
+                };
+            }
+        }
     } else {
-        document.getElementById('messageBoxCloseBtn').onclick = () => {
-            modal.classList.remove('show');
-            modal.remove();
-        };
+        const closeBtn = document.getElementById('messageBoxCloseBtn');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.classList.remove('show');
+                modal.remove();
+            };
+        }
     }
 }
 
@@ -655,12 +886,16 @@ function showMessageBox(title, message, type = 'alert', onConfirm = null, onCanc
  * Resets the user form.
  */
 function resetUserForm() {
-    document.getElementById('usernameInputForm').value = '';
-    document.getElementById('passwordInputForm').value = '';
+    const usernameInputForm = document.getElementById('usernameInputForm');
+    const passwordInputForm = document.getElementById('passwordInputForm');
+    const cancelEditUserBtn = document.getElementById('cancelEditUserBtn');
+
+    if (usernameInputForm) usernameInputForm.value = '';
+    if (passwordInputForm) passwordInputForm.value = '';
     document.querySelectorAll('#userRoles input[type="checkbox"]').forEach(checkbox => {
         checkbox.checked = false;
     });
-    document.getElementById('cancelEditUserBtn').style.display = 'none';
+    if (cancelEditUserBtn) cancelEditUserBtn.style.display = 'none';
     currentEditingId.users = null;
 }
 
@@ -673,8 +908,16 @@ function saveUser() {
         return;
     }
 
-    const username = document.getElementById('usernameInputForm').value;
-    const password = document.getElementById('passwordInputForm').value;
+    const usernameInputForm = document.getElementById('usernameInputForm');
+    const passwordInputForm = document.getElementById('passwordInputForm');
+
+    if (!usernameInputForm || !passwordInputForm) {
+        showNotification('Errore: Campi utente non trovati.', 'error');
+        return;
+    }
+
+    const username = usernameInputForm.value;
+    const password = passwordInputForm.value;
     const selectedRoles = Array.from(document.querySelectorAll('#userRoles input[type="checkbox"]:checked'))
                                .map(cb => cb.value);
 
@@ -736,12 +979,16 @@ function editUser(userId) {
 
     const user = appData.users.find(u => u.id === userId);
     if (user) {
-        document.getElementById('usernameInputForm').value = user.username;
-        document.getElementById('passwordInputForm').value = ''; // Don't pre-fill password for security
+        const usernameInputForm = document.getElementById('usernameInputForm');
+        const passwordInputForm = document.getElementById('passwordInputForm');
+        const cancelEditUserBtn = document.getElementById('cancelEditUserBtn');
+
+        if (usernameInputForm) usernameInputForm.value = user.username;
+        if (passwordInputForm) passwordInputForm.value = ''; // Don't pre-fill password for security
         document.querySelectorAll('#userRoles input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = user.roles.includes(checkbox.value);
         });
-        document.getElementById('cancelEditUserBtn').style.display = 'inline-block';
+        if (cancelEditUserBtn) cancelEditUserBtn.style.display = 'inline-block';
         currentEditingId.users = userId;
     } else {
         showNotification('Utente non trovato per la modifica.', 'error');
@@ -832,6 +1079,7 @@ function forcePasswordChangeOnNextLogin(userId) {
  */
 function updateUsersTable() {
     const tableBody = document.getElementById('usersTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.users.length === 0) {
@@ -879,10 +1127,15 @@ function updateUsersTable() {
  * Resets the phase form.
  */
 function resetPhaseForm() {
-    document.getElementById('phaseNameInput').value = '';
-    document.getElementById('phaseDepartmentSelect').value = '';
-    document.getElementById('phaseDurationInput').value = '';
-    document.getElementById('cancelEditPhaseBtn').style.display = 'none';
+    const phaseNameInput = document.getElementById('phaseNameInput');
+    const phaseDepartmentSelect = document.getElementById('phaseDepartmentSelect');
+    const phaseDurationInput = document.getElementById('phaseDurationInput');
+    const cancelEditPhaseBtn = document.getElementById('cancelEditPhaseBtn');
+
+    if (phaseNameInput) phaseNameInput.value = '';
+    if (phaseDepartmentSelect) phaseDepartmentSelect.value = '';
+    if (phaseDurationInput) phaseDurationInput.value = '';
+    if (cancelEditPhaseBtn) cancelEditPhaseBtn.style.display = 'none';
     currentEditingId.phases = null;
 }
 
@@ -895,9 +1148,18 @@ function savePhase() {
         return;
     }
 
-    const name = document.getElementById('phaseNameInput').value;
-    const departmentId = document.getElementById('phaseDepartmentSelect').value;
-    const duration = parseFloat(document.getElementById('phaseDurationInput').value);
+    const phaseNameInput = document.getElementById('phaseNameInput');
+    const phaseDepartmentSelect = document.getElementById('phaseDepartmentSelect');
+    const phaseDurationInput = document.getElementById('phaseDurationInput');
+
+    if (!phaseNameInput || !phaseDepartmentSelect || !phaseDurationInput) {
+        showNotification('Errore: Campi fase non trovati.', 'error');
+        return;
+    }
+
+    const name = phaseNameInput.value;
+    const departmentId = phaseDepartmentSelect.value;
+    const duration = parseFloat(phaseDurationInput.value);
 
     if (!name || !departmentId || isNaN(duration) || duration <= 0) {
         showNotification('Per favor, compila tutti i campi correttamente per la fase.', 'error');
@@ -958,10 +1220,15 @@ function editPhase(phaseId) {
     }
     const phase = appData.phases.find(p => p.id === phaseId);
     if (phase) {
-        document.getElementById('phaseNameInput').value = phase.name;
-        document.getElementById('phaseDepartmentSelect').value = phase.departmentId;
-        document.getElementById('phaseDurationInput').value = phase.duration;
-        document.getElementById('cancelEditPhaseBtn').style.display = 'inline-block';
+        const phaseNameInput = document.getElementById('phaseNameInput');
+        const phaseDepartmentSelect = document.getElementById('phaseDepartmentSelect');
+        const phaseDurationInput = document.getElementById('phaseDurationInput');
+        const cancelEditPhaseBtn = document.getElementById('cancelEditPhaseBtn');
+
+        if (phaseNameInput) phaseNameInput.value = phase.name;
+        if (phaseDepartmentSelect) phaseDepartmentSelect.value = phase.departmentId;
+        if (phaseDurationInput) phaseDurationInput.value = phase.duration;
+        if (cancelEditPhaseBtn) cancelEditPhaseBtn.style.display = 'inline-block';
         currentEditingId.phases = phaseId;
     } else {
         showNotification('Fase non trovata per la modifica.', 'error');
@@ -1002,6 +1269,7 @@ function deletePhase(phaseId) {
  */
 function updatePhasesTable() {
     const tableBody = document.getElementById('phasesTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.phases.length === 0) {
@@ -1066,10 +1334,15 @@ function populateDepartmentSelects() {
  * Resets the machine form.
  */
 function resetMachineForm() {
-    document.getElementById('machineNameInput').value = '';
-    document.getElementById('machineDepartmentSelect').value = '';
-    document.getElementById('machineCapacityInput').value = '';
-    document.getElementById('cancelEditMachineBtn').style.display = 'none';
+    const machineNameInput = document.getElementById('machineNameInput');
+    const machineDepartmentSelect = document.getElementById('machineDepartmentSelect');
+    const machineCapacityInput = document.getElementById('machineCapacityInput');
+    const cancelEditMachineBtn = document.getElementById('cancelEditMachineBtn');
+
+    if (machineNameInput) machineNameInput.value = '';
+    if (machineDepartmentSelect) machineDepartmentSelect.value = '';
+    if (machineCapacityInput) machineCapacityInput.value = '';
+    if (cancelEditMachineBtn) cancelEditMachineBtn.style.display = 'none';
     currentEditingId.machines = null;
 }
 
@@ -1082,9 +1355,18 @@ function saveMachine() {
         return;
     }
 
-    const name = document.getElementById('machineNameInput').value;
-    const departmentId = document.getElementById('machineDepartmentSelect').value;
-    const capacity = parseFloat(document.getElementById('machineCapacityInput').value);
+    const machineNameInput = document.getElementById('machineNameInput');
+    const machineDepartmentSelect = document.getElementById('machineDepartmentSelect');
+    const machineCapacityInput = document.getElementById('machineCapacityInput');
+
+    if (!machineNameInput || !machineDepartmentSelect || !machineCapacityInput) {
+        showNotification('Errore: Campi macchinario non trovati.', 'error');
+        return;
+    }
+
+    const name = machineNameInput.value;
+    const departmentId = machineDepartmentSelect.value;
+    const capacity = parseFloat(machineCapacityInput.value);
 
     if (!name || !departmentId || isNaN(capacity) || capacity <= 0) {
         showNotification('Per favore, compila tutti i campi correttamente per il macchinario.', 'error');
@@ -1145,10 +1427,15 @@ function editMachine(machineId) {
     }
     const machine = appData.machines.find(m => m.id === machineId);
     if (machine) {
-        document.getElementById('machineNameInput').value = machine.name;
-        document.getElementById('machineDepartmentSelect').value = machine.departmentId;
-        document.getElementById('machineCapacityInput').value = machine.capacity;
-        document.getElementById('cancelEditMachineBtn').style.display = 'inline-block';
+        const machineNameInput = document.getElementById('machineNameInput');
+        const machineDepartmentSelect = document.getElementById('machineDepartmentSelect');
+        const machineCapacityInput = document.getElementById('machineCapacityInput');
+        const cancelEditMachineBtn = document.getElementById('cancelEditMachineBtn');
+
+        if (machineNameInput) machineNameInput.value = machine.name;
+        if (machineDepartmentSelect) machineDepartmentSelect.value = machine.departmentId;
+        if (machineCapacityInput) machineCapacityInput.value = machine.capacity;
+        if (cancelEditMachineBtn) cancelEditMachineBtn.style.display = 'inline-block';
         currentEditingId.machines = machineId;
     } else {
         showNotification('Macchinario non trovato per la modifica.', 'error');
@@ -1179,6 +1466,7 @@ function deleteMachine(machineId) {
  */
 function updateMachinesTable() {
     const tableBody = document.getElementById('machinesTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.machines.length === 0) {
@@ -1214,9 +1502,13 @@ function updateMachinesTable() {
  * Resets the department form.
  */
 function resetDepartmentForm() {
-    document.getElementById('departmentNameInput').value = '';
-    document.getElementById('departmentDescriptionInput').value = '';
-    document.getElementById('cancelEditDepartmentBtn').style.display = 'none';
+    const departmentNameInput = document.getElementById('departmentNameInput');
+    const departmentDescriptionInput = document.getElementById('departmentDescriptionInput');
+    const cancelEditDepartmentBtn = document.getElementById('cancelEditDepartmentBtn');
+
+    if (departmentNameInput) departmentNameInput.value = '';
+    if (departmentDescriptionInput) departmentDescriptionInput.value = '';
+    if (cancelEditDepartmentBtn) cancelEditDepartmentBtn.style.display = 'none';
     currentEditingId.departments = null;
 }
 
@@ -1229,8 +1521,16 @@ function saveDepartment() {
         return;
     }
 
-    const name = document.getElementById('departmentNameInput').value;
-    const description = document.getElementById('departmentDescriptionInput').value;
+    const departmentNameInput = document.getElementById('departmentNameInput');
+    const departmentDescriptionInput = document.getElementById('departmentDescriptionInput');
+
+    if (!departmentNameInput || !departmentDescriptionInput) {
+        showNotification('Errore: Campi reparto non trovati.', 'error');
+        return;
+    }
+
+    const name = departmentNameInput.value;
+    const description = departmentDescriptionInput.value;
 
     if (!name) {
         showNotification('Il nome del reparto è obbligatorio.', 'error');
@@ -1282,9 +1582,13 @@ function editDepartment(departmentId) {
     }
     const department = appData.departments.find(d => d.id === departmentId);
     if (department) {
-        document.getElementById('departmentNameInput').value = department.name;
-        document.getElementById('departmentDescriptionInput').value = department.description;
-        document.getElementById('cancelEditDepartmentBtn').style.display = 'inline-block';
+        const departmentNameInput = document.getElementById('departmentNameInput');
+        const departmentDescriptionInput = document.getElementById('departmentDescriptionInput');
+        const cancelEditDepartmentBtn = document.getElementById('cancelEditDepartmentBtn');
+
+        if (departmentNameInput) departmentNameInput.value = department.name;
+        if (departmentDescriptionInput) departmentDescriptionInput.value = department.description;
+        if (cancelEditDepartmentBtn) cancelEditDepartmentBtn.style.display = 'inline-block';
         currentEditingId.departments = departmentId;
     } else {
         showNotification('Reparto non trovato per la modifica.', 'error');
@@ -1325,6 +1629,7 @@ function deleteDepartment(departmentId) {
  */
 function updateDepartmentsTable() {
     const tableBody = document.getElementById('departmentsTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.departments.length === 0) {
@@ -1359,9 +1664,13 @@ function updateDepartmentsTable() {
  * Resets the raw material form.
  */
 function resetRawMaterialForm() {
-    document.getElementById('rawMaterialNameInput').value = '';
-    document.getElementById('rawMaterialUnitInput').value = '';
-    document.getElementById('cancelEditRawMaterialBtn').style.display = 'none';
+    const rawMaterialNameInput = document.getElementById('rawMaterialNameInput');
+    const rawMaterialUnitInput = document.getElementById('rawMaterialUnitInput');
+    const cancelEditRawMaterialBtn = document.getElementById('cancelEditRawMaterialBtn');
+
+    if (rawMaterialNameInput) rawMaterialNameInput.value = '';
+    if (rawMaterialUnitInput) rawMaterialUnitInput.value = '';
+    if (cancelEditRawMaterialBtn) cancelEditRawMaterialBtn.style.display = 'none';
     currentEditingId.rawMaterials = null;
 }
 
@@ -1374,8 +1683,16 @@ function saveRawMaterial() {
         return;
     }
 
-    const name = document.getElementById('rawMaterialNameInput').value;
-    const unit = document.getElementById('rawMaterialUnitInput').value;
+    const rawMaterialNameInput = document.getElementById('rawMaterialNameInput');
+    const rawMaterialUnitInput = document.getElementById('rawMaterialUnitInput');
+
+    if (!rawMaterialNameInput || !rawMaterialUnitInput) {
+        showNotification('Errore: Campi materia prima non trovati.', 'error');
+        return;
+    }
+
+    const name = rawMaterialNameInput.value;
+    const unit = rawMaterialUnitInput.value;
 
     if (!name || !unit) {
         showNotification('Per favor, compila tutti i campi per la materia prima.', 'error');
@@ -1429,9 +1746,13 @@ function editRawMaterial(rawMaterialId) {
     }
     const rawMaterial = appData.rawMaterials.find(rm => rm.id === rawMaterialId);
     if (rawMaterial) {
-        document.getElementById('rawMaterialNameInput').value = rawMaterial.name;
-        document.getElementById('rawMaterialUnitInput').value = rawMaterial.unit;
-        document.getElementById('cancelEditRawMaterialBtn').style.display = 'inline-block';
+        const rawMaterialNameInput = document.getElementById('rawMaterialNameInput');
+        const rawMaterialUnitInput = document.getElementById('rawMaterialUnitInput');
+        const cancelEditRawMaterialBtn = document.getElementById('cancelEditRawMaterialBtn');
+
+        if (rawMaterialNameInput) rawMaterialNameInput.value = rawMaterial.name;
+        if (rawMaterialUnitInput) rawMaterialUnitInput.value = rawMaterial.unit;
+        if (cancelEditRawMaterialBtn) cancelEditRawMaterialBtn.style.display = 'inline-block';
         currentEditingId.rawMaterials = rawMaterialId;
     } else {
         showNotification('Materia prima non trovata per la modifica.', 'error');
@@ -1480,9 +1801,18 @@ function addStockMovement() {
         return;
     }
 
-    const rawMaterialId = parseInt(document.getElementById('stockRawMaterialSelect').value);
-    const quantity = parseFloat(document.getElementById('stockQuantityInput').value);
-    const type = document.getElementById('stockTypeSelect').value;
+    const stockRawMaterialSelect = document.getElementById('stockRawMaterialSelect');
+    const stockQuantityInput = document.getElementById('stockQuantityInput');
+    const stockTypeSelect = document.getElementById('stockTypeSelect');
+
+    if (!stockRawMaterialSelect || !stockQuantityInput || !stockTypeSelect) {
+        showNotification('Errore: Campi movimento stock non trovati.', 'error');
+        return;
+    }
+
+    const rawMaterialId = parseInt(stockRawMaterialSelect.value);
+    const quantity = parseFloat(stockQuantityInput.value);
+    const type = stockTypeSelect.value;
 
     if (!rawMaterialId || isNaN(quantity) || quantity <= 0) {
         showNotification('Per favore, seleziona una materia prima e inserisci una quantità valida.', 'error');
@@ -1525,9 +1855,9 @@ function addStockMovement() {
     showNotification(`Movimento di stock registrato per ${rawMaterial.name}.`, 'success');
 
     // Reset stock movement form
-    document.getElementById('stockRawMaterialSelect').value = '';
-    document.getElementById('stockQuantityInput').value = '';
-    document.getElementById('stockTypeSelect').value = 'entry';
+    stockRawMaterialSelect.value = '';
+    stockQuantityInput.value = '';
+    stockTypeSelect.value = 'entry';
 }
 
 /**
@@ -1535,6 +1865,7 @@ function addStockMovement() {
  */
 function updateRawMaterialsTable() {
     const tableBody = document.getElementById('rawMaterialsStockTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.rawMaterials.length === 0) {
@@ -1573,6 +1904,7 @@ function updateRawMaterialsTable() {
  */
 function updateWarehouseJournalTable() {
     const tableBody = document.getElementById('warehouseJournalTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.warehouseJournal.length === 0) {
@@ -1676,11 +2008,26 @@ function populateRawMaterialSelectsForBom() {
  * Resets the article form.
  */
 function resetArticleForm() {
-    document.getElementById('articleNameInput').value = '';
-    document.getElementById('articleDescriptionInput').value = '';
-    document.getElementById('cycleStepsContainer').innerHTML = '<p style="text-align: center; color: #888;">Aggiungi fasi al ciclo di lavorazione.</p>';
-    document.getElementById('bomItemsContainer').innerHTML = '<p style="text-align: center; color: #888;">Aggiungi materie prime alla distinta base.</p>';
-    document.getElementById('cancelEditArticleBtn').style.display = 'none';
+    const articleNameInput = document.getElementById('articleNameInput');
+    const articleDescriptionInput = document.getElementById('articleDescriptionInput');
+    const cycleStepsContainer = document.getElementById('cycleStepsContainer');
+    const bomItemsContainer = document.getElementById('bomItemsContainer');
+    const cancelEditArticleBtn = document.getElementById('cancelEditArticleBtn');
+
+    if (articleNameInput) articleNameInput.value = '';
+    if (articleDescriptionInput) articleDescriptionInput.value = '';
+
+    if (cycleStepsContainer) {
+        cycleStepsContainer.innerHTML = ''; // Clear existing
+        addCycleStep(); // Always add at least one empty step for new articles
+    }
+
+    if (bomItemsContainer) {
+        bomItemsContainer.innerHTML = ''; // Clear existing
+        addBomItem(); // Always add at least one empty item for new articles
+    }
+
+    if (cancelEditArticleBtn) cancelEditArticleBtn.style.display = 'none';
     currentEditingId.articles = null;
 }
 
@@ -1689,8 +2036,11 @@ function resetArticleForm() {
  */
 function addCycleStep(phaseId = '', duration = '') {
     const container = document.getElementById('cycleStepsContainer');
+    if (!container) return; // Exit if container not found
+
     // Remove placeholder if present
-    if (container.querySelector('p')) {
+    const placeholder = container.querySelector('p');
+    if (placeholder && container.children.length === 1) { // Only remove if it's the only child
         container.innerHTML = '';
     }
 
@@ -1752,9 +2102,9 @@ function populatePhaseSelects(selectElement, selectedPhaseId = null) {
  */
 function removeCycleStep(button) {
     const stepDiv = button.closest('.cycle-step');
-    stepDiv.remove();
+    if (stepDiv) stepDiv.remove();
     const container = document.getElementById('cycleStepsContainer');
-    if (container.children.length === 0) {
+    if (container && container.children.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #888;">Aggiungi fasi al ciclo di lavorazione.</p>';
     }
 }
@@ -1764,8 +2114,11 @@ function removeCycleStep(button) {
  */
 function addBomItem(rawMaterialId = '', quantity = '') {
     const container = document.getElementById('bomItemsContainer');
+    if (!container) return; // Exit if container not found
+
     // Remove placeholder if present
-    if (container.querySelector('p')) {
+    const placeholder = container.querySelector('p');
+    if (placeholder && container.children.length === 1) { // Only remove if it's the only child
         container.innerHTML = '';
     }
 
@@ -1827,9 +2180,9 @@ function populateRawMaterialSelectsForBomItem(selectElement, selectedRawMaterial
  */
 function removeBomItem(button) {
     const itemDiv = button.closest('.bom-item');
-    itemDiv.remove();
+    if (itemDiv) itemDiv.remove();
     const container = document.getElementById('bomItemsContainer');
-    if (container.children.length === 0) {
+    if (container && container.children.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #888;">Aggiungi materie prime alla distinta base.</p>';
     }
 }
@@ -1843,8 +2196,16 @@ function saveArticle() {
         return;
     }
 
-    const name = document.getElementById('articleNameInput').value;
-    const description = document.getElementById('articleDescriptionInput').value;
+    const articleNameInput = document.getElementById('articleNameInput');
+    const articleDescriptionInput = document.getElementById('articleDescriptionInput');
+
+    if (!articleNameInput || !articleDescriptionInput) {
+        showNotification('Errore: Campi articolo non trovati.', 'error');
+        return;
+    }
+
+    const name = articleNameInput.value;
+    const description = articleDescriptionInput.value;
 
     if (!name) {
         showNotification('Il nome dell\'articolo è obbligatorio.', 'error');
@@ -1855,8 +2216,16 @@ function saveArticle() {
     const cycleSteps = [];
     const cycleStepElements = document.querySelectorAll('#cycleStepsContainer .cycle-step');
     for (const stepEl of cycleStepElements) {
-        const phaseId = parseInt(stepEl.querySelector('.phase-select').value);
-        const duration = parseFloat(stepEl.querySelector('.step-duration-input').value);
+        const phaseSelect = stepEl.querySelector('.phase-select');
+        const durationInput = stepEl.querySelector('.step-duration-input');
+
+        if (!phaseSelect || !durationInput) {
+            showNotification('Errore: Elementi fase del ciclo non trovati in una riga.', 'error');
+            return;
+        }
+
+        const phaseId = parseInt(phaseSelect.value);
+        const duration = parseFloat(durationInput.value);
 
         if (isNaN(phaseId) || isNaN(duration) || duration <= 0) {
             showNotification('Per favor, completa tutte le fasi del ciclo di lavorazione con valori validi.', 'error');
@@ -1880,8 +2249,16 @@ function saveArticle() {
     const bomItems = [];
     const bomItemElements = document.querySelectorAll('#bomItemsContainer .bom-item');
     for (const itemEl of bomItemElements) {
-        const rawMaterialId = parseInt(itemEl.querySelector('.raw-material-select').value);
-        const quantity = parseFloat(itemEl.querySelector('.item-quantity-input').value);
+        const rawMaterialSelect = itemEl.querySelector('.raw-material-select');
+        const quantityInput = itemEl.querySelector('.item-quantity-input');
+
+        if (!rawMaterialSelect || !quantityInput) {
+            showNotification('Errore: Elementi materia prima della distinta base non trovati in una riga.', 'error');
+            return;
+        }
+
+        const rawMaterialId = parseInt(rawMaterialSelect.value);
+        const quantity = parseFloat(quantityInput.value);
 
         if (isNaN(rawMaterialId) || isNaN(quantity) || quantity <= 0) {
             showNotification('Per favor, completa tutte le materie prime della distinta base con valori validi.', 'error');
@@ -1949,32 +2326,42 @@ function editArticle(articleId) {
     }
     const article = appData.articles.find(a => a.id === articleId);
     if (article) {
-        document.getElementById('articleNameInput').value = article.name;
-        document.getElementById('articleDescriptionInput').value = article.description;
+        const articleNameInput = document.getElementById('articleNameInput');
+        const articleDescriptionInput = document.getElementById('articleDescriptionInput');
+        const cycleStepsContainer = document.getElementById('cycleStepsContainer');
+        const bomItemsContainer = document.getElementById('bomItemsContainer');
+        const cancelEditArticleBtn = document.getElementById('cancelEditArticleBtn');
+
+        if (articleNameInput) articleNameInput.value = article.name;
+        if (articleDescriptionInput) articleDescriptionInput.value = article.description;
 
         // Populate cycle steps
-        const cycleStepsContainer = document.getElementById('cycleStepsContainer');
-        cycleStepsContainer.innerHTML = ''; // Clear existing
-        if (article.cycle.length === 0) {
-            cycleStepsContainer.innerHTML = '<p style="text-align: center; color: #888;">Aggiungi fasi al ciclo di lavorazione.</p>';
-        } else {
-            article.cycle.forEach(step => {
-                addCycleStep(step.phaseId, step.duration);
-            });
+        if (cycleStepsContainer) {
+            cycleStepsContainer.innerHTML = ''; // Clear existing
+            if (article.cycle.length === 0) {
+                addCycleStep(); // Add an empty step if none exist
+            } else {
+                article.cycle.forEach(step => {
+                    addCycleStep(step.phaseId, step.duration);
+                });
+            }
         }
+
 
         // Populate BOM items
-        const bomItemsContainer = document.getElementById('bomItemsContainer');
-        bomItemsContainer.innerHTML = ''; // Clear existing
-        if (article.bom.length === 0) {
-            bomItemsContainer.innerHTML = '<p style="text-align: center; color: #888;">Aggiungi materie prime alla distinta base.</p>';
-        } else {
-            article.bom.forEach(item => {
-                addBomItem(item.rawMaterialId, item.quantity);
-            });
+        if (bomItemsContainer) {
+            bomItemsContainer.innerHTML = ''; // Clear existing
+            if (article.bom.length === 0) {
+                addBomItem(); // Add an empty item if none exist
+            } else {
+                article.bom.forEach(item => {
+                    addBomItem(item.rawMaterialId, item.quantity);
+                });
+            }
         }
 
-        document.getElementById('cancelEditArticleBtn').style.display = 'inline-block';
+
+        if (cancelEditArticleBtn) cancelEditArticleBtn.style.display = 'inline-block';
         currentEditingId.articles = articleId;
     } else {
         showNotification('Articolo non trovato per la modifica.', 'error');
@@ -2014,6 +2401,7 @@ function deleteArticle(articleId) {
  */
 function updateArticlesTable() {
     const tableBody = document.getElementById('articlesTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.articles.length === 0) {
@@ -2076,14 +2464,24 @@ function populatePlanningArticleSelect() {
  * Resets the planning form and hides results.
  */
 function resetPlanningForm() {
-    document.getElementById('planningArticleSelect').value = '';
-    document.getElementById('planningQuantityInput').value = '';
-    document.getElementById('planningPrioritySelect').value = 'low';
-    document.getElementById('planningTypeSelect').value = 'production';
-    document.getElementById('planningDeliveryDateInput').value = '';
-    document.getElementById('planningResult').style.display = 'none';
-    document.getElementById('savePlanningBtn').style.display = 'none';
-    document.getElementById('cancelPlanningBtn').style.display = 'none';
+    const planningArticleSelect = document.getElementById('planningArticleSelect');
+    const planningQuantityInput = document.getElementById('planningQuantityInput');
+    const planningPrioritySelect = document.getElementById('planningPrioritySelect');
+    const planningTypeSelect = document.getElementById('planningTypeSelect');
+    const planningDeliveryDateInput = document.getElementById('planningDeliveryDateInput');
+    const planningResult = document.getElementById('planningResult');
+    const savePlanningBtn = document.getElementById('savePlanningBtn');
+    const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
+
+
+    if (planningArticleSelect) planningArticleSelect.value = '';
+    if (planningQuantityInput) planningQuantityInput.value = '';
+    if (planningPrioritySelect) planningPrioritySelect.value = 'low';
+    if (planningTypeSelect) planningTypeSelect.value = 'production';
+    if (planningDeliveryDateInput) planningDeliveryDateInput.value = '';
+    if (planningResult) planningResult.style.display = 'none';
+    if (savePlanningBtn) savePlanningBtn.style.display = 'none';
+    if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'none';
     currentCalculatedPlanningDetails = null;
 }
 
@@ -2096,11 +2494,22 @@ function calculatePlanning() {
         return;
     }
 
-    const articleId = parseInt(document.getElementById('planningArticleSelect').value);
-    const quantity = parseInt(document.getElementById('planningQuantityInput').value);
-    const priority = document.getElementById('planningPrioritySelect').value;
-    const type = document.getElementById('planningTypeSelect').value;
-    const deliveryDateStr = document.getElementById('planningDeliveryDateInput').value;
+    const planningArticleSelect = document.getElementById('planningArticleSelect');
+    const planningQuantityInput = document.getElementById('planningQuantityInput');
+    const planningPrioritySelect = document.getElementById('planningPrioritySelect');
+    const planningTypeSelect = document.getElementById('planningTypeSelect');
+    const planningDeliveryDateInput = document.getElementById('planningDeliveryDateInput');
+
+    if (!planningArticleSelect || !planningQuantityInput || !planningPrioritySelect || !planningTypeSelect || !planningDeliveryDateInput) {
+        showNotification('Errore: Campi pianificazione non trovati.', 'error');
+        return;
+    }
+
+    const articleId = parseInt(planningArticleSelect.value);
+    const quantity = parseInt(planningQuantityInput.value);
+    const priority = planningPrioritySelect.value;
+    const type = planningTypeSelect.value;
+    const deliveryDateStr = planningDeliveryDateInput.value;
 
     if (!articleId || isNaN(quantity) || quantity <= 0 || !deliveryDateStr) {
         showNotification('Per favore, seleziona un articolo, inserisci una quantità valida e una data di consegna.', 'error');
@@ -2169,6 +2578,7 @@ function calculatePlanning() {
     article.bom.forEach(item => {
         const totalQuantity = item.quantity * quantity;
         materialsNeeded.push({
+            rawMaterialId: item.rawMaterialId, // Include rawMaterialId for stock check
             rawMaterialName: item.rawMaterialName,
             totalQuantity: totalQuantity,
             unit: item.unit
@@ -2193,38 +2603,52 @@ function calculatePlanning() {
     };
 
     // Display results
-    document.getElementById('suggestedStartDate').textContent = new Date(currentCalculatedPlanningDetails.suggestedStartDate).toLocaleDateString('it-IT');
-    document.getElementById('suggestedEndDate').textContent = new Date(currentCalculatedPlanningDetails.suggestedEndDate).toLocaleDateString('it-IT');
-    document.getElementById('totalWorkingDays').textContent = currentCalculatedPlanningDetails.totalWorkingDays;
-
+    const suggestedStartDateEl = document.getElementById('suggestedStartDate');
+    const suggestedEndDateEl = document.getElementById('suggestedEndDate');
+    const totalWorkingDaysEl = document.getElementById('totalWorkingDays');
     const workloadUl = document.getElementById('workloadDetails');
-    workloadUl.innerHTML = '';
-    workloadDetails.forEach(detail => {
-        const li = document.createElement('li');
-        li.textContent = `${detail.departmentName}: ${detail.totalHours.toFixed(2)} ore`;
-        workloadUl.appendChild(li);
-    });
-
     const materialsUl = document.getElementById('materialsNeeded');
-    materialsUl.innerHTML = '';
-    materialsNeeded.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = `${item.rawMaterialName}: ${item.totalQuantity.toFixed(2)} ${item.unit}`;
-        materialsUl.appendChild(li);
+    const planningResult = document.getElementById('planningResult');
+    const savePlanningBtn = document.getElementById('savePlanningBtn');
+    const cancelPlanningBtn = document.getElementById('cancelPlanningBtn');
 
-        // Check stock and add notification if insufficient
-        const rawMaterialInStock = appData.rawMaterials.find(rm => rm.id === item.rawMaterialId);
-        if (rawMaterialInStock && rawMaterialInStock.currentStock < item.totalQuantity) {
-            addAppNotification(
-                `Stock insufficiente per ${item.rawMaterialName}. Necessari: ${item.totalQuantity} ${item.unit}, Disponibili: ${rawMaterialInStock.currentStock} ${rawMaterialInStock.unit}.`,
-                'warning'
-            );
-        }
-    });
 
-    document.getElementById('planningResult').style.display = 'block';
-    document.getElementById('savePlanningBtn').style.display = 'inline-block';
-    document.getElementById('cancelPlanningBtn').style.display = 'inline-block';
+    if (suggestedStartDateEl) suggestedStartDateEl.textContent = new Date(currentCalculatedPlanningDetails.suggestedStartDate).toLocaleDateString('it-IT');
+    if (suggestedEndDateEl) suggestedEndDateEl.textContent = new Date(currentCalculatedPlanningDetails.suggestedEndDate).toLocaleDateString('it-IT');
+    if (totalWorkingDaysEl) totalWorkingDaysEl.textContent = currentCalculatedPlanningDetails.totalWorkingDays;
+
+    if (workloadUl) {
+        workloadUl.innerHTML = '';
+        workloadDetails.forEach(detail => {
+            const li = document.createElement('li');
+            li.textContent = `${detail.departmentName}: ${detail.totalHours.toFixed(2)} ore`;
+            workloadUl.appendChild(li);
+        });
+    }
+
+
+    if (materialsUl) {
+        materialsUl.innerHTML = '';
+        materialsNeeded.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `${item.rawMaterialName}: ${item.totalQuantity.toFixed(2)} ${item.unit}`;
+            materialsUl.appendChild(li);
+
+            // Check stock and add notification if insufficient
+            const rawMaterialInStock = appData.rawMaterials.find(rm => rm.id === item.rawMaterialId);
+            if (rawMaterialInStock && rawMaterialInStock.currentStock < item.totalQuantity) {
+                addAppNotification(
+                    `Stock insufficiente per ${item.rawMaterialName}. Necessari: ${item.totalQuantity} ${item.unit}, Disponibili: ${rawMaterialInStock.currentStock} ${rawMaterialInStock.unit}.`,
+                    'warning'
+                );
+            }
+        });
+    }
+
+
+    if (planningResult) planningResult.style.display = 'block';
+    if (savePlanningBtn) savePlanningBtn.style.display = 'inline-block';
+    if (cancelPlanningBtn) cancelPlanningBtn.style.display = 'inline-block';
     showNotification('Pianificazione calcolata con successo!', 'success');
 }
 
@@ -2259,6 +2683,7 @@ function saveCalculatedPlanning() {
  */
 function updateProductionLotsTable() {
     const tableBody = document.getElementById('productionLotsTableBody');
+    if (!tableBody) return;
     tableBody.innerHTML = ''; // Clear existing rows
 
     if (appData.productionPlan.length === 0) {
@@ -2390,8 +2815,16 @@ function openConfirmConsumptionModal(lotId) {
 
     currentModalJournalEntryId = lotId; // Store lot ID for consumption
 
-    document.getElementById('consumptionLotIdDisplay').textContent = lot.id;
+    const consumptionLotIdDisplay = document.getElementById('consumptionLotIdDisplay');
     const materialsToConsumeList = document.getElementById('materialsToConsumeList');
+    const confirmConsumptionModal = document.getElementById('confirmConsumptionModal');
+
+    if (!consumptionLotIdDisplay || !materialsToConsumeList || !confirmConsumptionModal) {
+        showNotification('Errore: Elementi modale consumo non trovati.', 'error');
+        return;
+    }
+
+    consumptionLotIdDisplay.textContent = lot.id;
     materialsToConsumeList.innerHTML = '';
 
     if (lot.materialsNeeded && lot.materialsNeeded.length > 0) {
@@ -2410,15 +2843,17 @@ function openConfirmConsumptionModal(lotId) {
         materialsToConsumeList.innerHTML = '<p>Nessuna materia prima richiesta per questo lotto.</p>';
     }
 
-    document.getElementById('confirmConsumptionModal').classList.add('show');
+    confirmConsumptionModal.classList.add('show');
 }
 
 /**
  * Closes the raw material consumption confirmation modal.
  */
 function closeConfirmConsumptionModal() {
-    document.getElementById('confirmConsumptionModal').classList.remove('show');
-    document.getElementById('consumptionNotes').value = '';
+    const confirmConsumptionModal = document.getElementById('confirmConsumptionModal');
+    const consumptionNotes = document.getElementById('consumptionNotes');
+    if (confirmConsumptionModal) confirmConsumptionModal.classList.remove('show');
+    if (consumptionNotes) consumptionNotes.value = '';
     currentModalJournalEntryId = null;
 }
 
@@ -2433,12 +2868,17 @@ function confirmConsumption() {
 
     const lotId = currentModalJournalEntryId;
     const lot = appData.productionPlan.find(l => l.id === lotId);
-    const notes = document.getElementById('consumptionNotes').value;
+    const consumptionNotes = document.getElementById('consumptionNotes');
 
     if (!lot) {
         showNotification('Errore: Lotto di produzione non trovato per il consumo.', 'error');
         return;
     }
+    if (!consumptionNotes) {
+        showNotification('Errore: Campo note consumo non trovato.', 'error');
+        return;
+    }
+    const notes = consumptionNotes.value;
 
     let allMaterialsAvailable = true;
     const consumptionEntries = [];
@@ -2522,27 +2962,18 @@ function openEditPlanningLotModal(lotId) {
 
     // Populate the modal form
     const editPlanningArticleSelect = document.getElementById('editPlanningArticleSelect');
-    if (editPlanningArticleSelect) { // Ensure element exists
-        editPlanningArticleSelect.value = lot.articleId;
-    }
     const editPlanningQuantityInput = document.getElementById('editPlanningQuantityInput');
-    if (editPlanningQuantityInput) {
-        editPlanningQuantityInput.value = lot.quantity;
-    }
     const editPlanningPrioritySelect = document.getElementById('editPlanningPrioritySelect');
-    if (editPlanningPrioritySelect) {
-        editPlanningPrioritySelect.value = lot.priority;
-    }
     const editPlanningTypeSelect = document.getElementById('editPlanningTypeSelect');
-    if (editPlanningTypeSelect) {
-        editPlanningTypeSelect.value = lot.type;
-    }
     const editPlanningDeliveryDateInput = document.getElementById('editPlanningDeliveryDateInput');
-    if (editPlanningDeliveryDateInput) {
-        editPlanningDeliveryDateInput.value = lot.deliveryDate;
-    }
+    const editPlanningLotModal = document.getElementById('editPlanningLotModal');
 
-    document.getElementById('editPlanningLotModal').classList.add('show');
+    if (editPlanningArticleSelect) editPlanningArticleSelect.value = lot.articleId;
+    if (editPlanningQuantityInput) editPlanningQuantityInput.value = lot.quantity;
+    if (editPlanningPrioritySelect) editPlanningPrioritySelect.value = lot.priority;
+    if (editPlanningTypeSelect) editPlanningTypeSelect.value = lot.type;
+    if (editPlanningDeliveryDateInput) editPlanningDeliveryDateInput.value = lot.deliveryDate;
+    if (editPlanningLotModal) editPlanningLotModal.classList.add('show');
 }
 
 /**
@@ -2562,11 +2993,22 @@ function saveEditedPlanningLot() {
         return;
     }
 
-    const articleId = parseInt(document.getElementById('editPlanningArticleSelect').value);
-    const quantity = parseInt(document.getElementById('editPlanningQuantityInput').value);
-    const priority = document.getElementById('editPlanningPrioritySelect').value;
-    const type = document.getElementById('editPlanningTypeSelect').value;
-    const deliveryDateStr = document.getElementById('editPlanningDeliveryDateInput').value;
+    const editPlanningArticleSelect = document.getElementById('editPlanningArticleSelect');
+    const editPlanningQuantityInput = document.getElementById('editPlanningQuantityInput');
+    const editPlanningPrioritySelect = document.getElementById('editPlanningPrioritySelect');
+    const editPlanningTypeSelect = document.getElementById('editPlanningTypeSelect');
+    const editPlanningDeliveryDateInput = document.getElementById('editPlanningDeliveryDateInput');
+
+    if (!editPlanningArticleSelect || !editPlanningQuantityInput || !editPlanningPrioritySelect || !editPlanningTypeSelect || !editPlanningDeliveryDateInput) {
+        showNotification('Errore: Campi modale modifica pianificazione non trovati.', 'error');
+        return;
+    }
+
+    const articleId = parseInt(editPlanningArticleSelect.value);
+    const quantity = parseInt(editPlanningQuantityInput.value);
+    const priority = editPlanningPrioritySelect.value;
+    const type = editPlanningTypeSelect.value;
+    const deliveryDateStr = editPlanningDeliveryDateInput.value;
 
     if (!articleId || isNaN(quantity) || quantity <= 0 || !deliveryDateStr) {
         showNotification('Per favore, compila tutti i campi correttamente nel modulo di modifica.', 'error');
@@ -2632,7 +3074,7 @@ function saveEditedPlanningLot() {
 
     // Recalculate materials needed
     updatedLot.materialsNeeded = article.bom.map(item => ({
-        rawMaterialId: item.rawMaterialId,
+        rawMaterialId: item.rawMaterialId, // Include rawMaterialId for stock check
         rawMaterialName: item.rawMaterialName,
         unit: item.unit,
         totalQuantity: item.quantity * quantity
@@ -2652,7 +3094,8 @@ function saveEditedPlanningLot() {
  * Closes the edit planning lot modal.
  */
 function closeEditPlanningLotModal() {
-    document.getElementById('editPlanningLotModal').classList.remove('show');
+    const editPlanningLotModal = document.getElementById('editPlanningLotModal');
+    if (editPlanningLotModal) editPlanningLotModal.classList.remove('show');
     currentEditingId.planning = null;
 }
 
@@ -2921,24 +3364,32 @@ function addHoliday() {
         return;
     }
 
-    const dateInput = document.getElementById('holidayDateInput').value;
-    const descriptionInput = document.getElementById('holidayDescriptionInput').value;
+    const dateInput = document.getElementById('holidayDateInput');
+    const descriptionInput = document.getElementById('holidayDescriptionInput');
 
     if (!dateInput || !descriptionInput) {
+        showNotification('Errore: Campi giorno rosso non trovati.', 'error');
+        return;
+    }
+
+    const date = dateInput.value;
+    const description = descriptionInput.value;
+
+    if (!date || !description) {
         showNotification('Per favore, inserisci sia la data che la descrizione del giorno rosso.', 'error');
         return;
     }
 
     // Check for duplicates
-    if (appData.holidays.some(h => h.date === dateInput)) {
+    if (appData.holidays.some(h => h.date === date)) {
         showNotification('Errore: Un giorno rosso con questa data esiste già.', 'error');
         return;
     }
 
     const newHoliday = {
         id: generateId(),
-        date: dateInput,
-        description: descriptionInput
+        date: date,
+        description: description
     };
     appData.holidays.push(newHoliday);
     saveData();
@@ -2947,8 +3398,8 @@ function addHoliday() {
     renderDeliveryCalendar(appData.currentDeliveryWeekStartDate);
     renderWorkloadCalendar(appData.currentWorkloadWeekStartDate);
     showNotification('Giorno rosso aggiunto con successo!', 'success');
-    document.getElementById('holidayDateInput').value = '';
-    document.getElementById('holidayDescriptionInput').value = '';
+    dateInput.value = '';
+    descriptionInput.value = '';
 }
 
 /**
@@ -3123,23 +3574,33 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAndInitializeAppData();
 
     // Set up event listeners for login
-    document.getElementById('loginButton').addEventListener('click', loginUser);
-    document.getElementById('usernameInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            loginUser();
-        }
-    });
-    document.getElementById('passwordInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            loginUser();
-        }
-    });
+    const loginButton = document.getElementById('loginButton');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+
+    if (loginButton) loginButton.addEventListener('click', loginUser);
+    if (usernameInput) {
+        usernameInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                loginUser();
+            }
+        });
+    }
+    if (passwordInput) {
+        passwordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                loginUser();
+            }
+        });
+    }
+
 
     // Initial theme application
     applyTheme();
 
     // Hide app content until login
-    document.getElementById('appContent').style.display = 'none';
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'none';
 
     console.log("DOMContentLoaded: Caricamento app completato.");
 });
